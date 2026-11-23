@@ -1,37 +1,35 @@
 # Wayward 모바일 리디자인 재현용 런북
 
 ## 목적
-`Wayward_MOD_v2.107.html`처럼 수 MB 규모의 단일 HTML/React 번들을 대상으로, 원본 게임 로직을 보존하면서 모바일 UI만 반복적으로 개선하기 위한 재현 절차를 고정한다.
+현재 작업에서 선택된 수 MB 규모의 단일 HTML/React 번들을 대상으로, 원본 게임 로직을 보존하면서 모바일 UI만 반복적으로 개선하기 위한 재현 절차를 고정한다.
 
 ## 원칙
-1. `main`의 원본 게임 파일은 작업 중 직접 덮어쓰지 않는다. 모바일 수정은 별도 작업 브랜치에서 수행한다.
+1. 정식 원본 소스가 관리되는 기준 브랜치는 별도 승인 없이 수정하지 않는다. 모바일 수정은 현재 작업 브랜치에서 수행한다.
 2. 저장/불러오기, RNG, ID, 턴 처리, undo, 이벤트 판정 등 게임 엔진과 상태 경계를 변경하지 않는다.
 3. UI 변경은 가능한 한 상단 UI 라우터(`nce`), 메인 화면(`Ihe`), 메인 본문(`vle`) 및 모바일 전용 CSS/보조 UI에 한정한다.
 4. 수 MB 원본을 줄 단위로 자르지 않는다. 한 줄이 수백만 문자인 번들이므로, 분석용 파트는 **고정 문자 수**로 자른다.
 5. 모든 변경 후 JavaScript 문법 검사를 수행한다. 특히 inline script를 임시 JS 파일로 추출해 `node --check`를 통과시킨 뒤 커밋한다.
 6. 변경 범위를 diff로 확인해 게임 저장/런타임 로직이 의도치 않게 변하지 않았는지 검증한다.
 
-## 현재 기준 원본
-- repository: `diethoon/wayward`
-- branch: `main`
-- source: `Wayward_MOD_v2.107.html`
-- source blob SHA: `343c1b01668008a9c9a9be895bc48b5c23c19d7e`
-- 당시 크기: 약 5.63M characters / 7.40MB UTF-8 / 6,808 lines
-- 최대 단일 line: 약 2.47M characters
+## 현재 작업 원본 식별
+- 원본은 현재 작업 브랜치의 루트에 있는 HTML 파일을 기준으로 한다.
+- 분석 워크플로가 루트 HTML 파일을 자동 탐색하며, 후보가 정확히 하나가 아니면 실패한다.
+- source path, blob SHA, SHA-256, byte/character/line 수와 현재 HEAD는 매 실행에서 실제 값으로 기록한다.
+- 과거 파일명, 버전, 커밋 SHA, 브랜치명을 다음 작업의 기본 기준으로 재사용하지 않는다.
 
 ## 분석 파이프라인
 현재 `.github/workflows/main.yml`은 다음을 수행한다.
 1. 원본 전체를 읽고 SHA-256/문자 수/byte 수/line 수를 기록한다.
-2. 80,000 characters 단위로 `analysis_parts/Wayward_MOD_v2.107.partNNN.txt`를 생성한다.
+2. 80,000 characters 단위로 `analysis_parts/{source-stem}.partNNN.txt`를 생성한다.
 3. `MANIFEST.json`, `STATIC_REPORT.md`, `UI_COMPONENT_INDEX.md`, `UI_SNIPPETS.md`, CSS/HTML 분석 자료를 생성한다.
 4. `nce/Ihe/vle/zse/The/She/whe` 및 관련 runtime/mobile interaction을 별도 target context로 추출한다.
 5. compact patch context를 생성해 실제 패치 시 대용량 원문 조회를 피한다.
 6. 결과를 저장소에 커밋한다.
 
 ## 브랜치 실행/안전 장치
-- push 대상에는 `main`과 `mobile-redesign-v1`을 사용한다.
-- workflow concurrency로 같은 ref의 중복 실행을 직렬화한다.
-- 모바일 patch 단계는 `mobile-redesign-v1`에서만 실행된다.
+- 원본 HTML 변경 감지는 현재 ref에 적용되며, 분석 산출물은 실행된 동일 ref에 반영한다.
+- workflow concurrency는 현재 ref 단위로 중복 실행을 직렬화한다.
+- 모바일 patch는 `workflow_dispatch`의 `apply_mobile_patch=true`를 사용자가 명시적으로 선택한 실행에서만 동작한다. 특정 브랜치명에 종속되지 않는다.
 - patch는 정확한 기존 target 문자열이 없어지면 `PATCH_GUARD_FAILED`로 중단한다.
 - patch marker가 이미 존재하면 다시 삽입하지 않는다.
 - source와 analysis를 함께 stage하고 remote를 fetch/rebase한 뒤 push한다.
@@ -41,7 +39,7 @@
 - 터치 오작동으로 데스크톱용 column drag/resize가 발생하지 않게 한다.
 - 캐릭터 portrait/status 상세가 세로 화면에서도 반드시 접근 가능해야 한다.
 - location movement map을 portrait에서도 별도 full-screen surface로 열 수 있게 한다.
-- 좌하단 `Wayward MOD v2.107` 디버그 버튼이 게임 내용을 가리지 않도록 한다. 기본값은 낮은 불투명도 + 필요시 드러나는 방식으로 하고, 이동 가능성도 고려한다.
+- 좌하단 게임 내 디버그 토글이 게임 내용을 가리지 않도록 한다. 기본값은 낮은 불투명도 + 필요시 드러나는 방식으로 하고, 이동 가능성도 고려한다.
 - 현재 화면의 핵심 정보 우선순위를 높여 portrait에서 과밀해지지 않게 한다.
 - 스크롤 주체를 명확하게 하고 nested scroll/pointer 충돌을 줄인다.
 - 작은 모바일 터치 타깃과 인접한 아이콘으로 인한 오입력을 줄인다.
@@ -52,7 +50,7 @@
 
 ## 작업 순서
 ### Phase 0 — 기준선
-- `main`의 source SHA를 기록한다.
+- 현재 작업 기준의 실제 source SHA와 HEAD를 기록한다.
 - 작업 브랜치를 만든다.
 - 저장/undo/RNG/ID 관련 함수의 변경 금지를 선언한다.
 
@@ -81,8 +79,8 @@
 6. 로그에 변경 파일/커밋/검증 결과 기록
 
 ## 새 버전 HTML이 들어왔을 때
-1. 새 HTML을 `main`에 반영하면 `main.yml`이 자동으로 재분석한다.
+1. 현재 작업 ref의 루트 HTML이 변경되면 `main.yml`이 자동으로 재분석한다.
 2. 분석 manifest의 SHA-256과 크기를 새 기준선으로 기록한다.
-3. 동일한 모바일 리디자인 브랜치에서 무조건 기존 patch를 재적용하지 말고, **target function/context가 여전히 존재하는지 먼저 검증**한다.
+3. 이전 작업 브랜치나 과거 기준점에 자동으로 의존하지 말고, **target function/context가 여전히 존재하는지 먼저 검증**한다.
 4. target context가 바뀌었으면 patch를 실패시키고 수동 검토 상태로 남긴다.
 5. 성공한 경우에만 UI patch → syntax check → diff guard 순으로 진행한다.
