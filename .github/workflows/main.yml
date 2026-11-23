@@ -290,10 +290,11 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
           from collections import Counter
 
-          src=Path("Wayward_MOD_v2.107.html")
+          src=Path(os.environ["WAYWARD_SOURCE_HTML"])
           out=Path("analysis_parts")
           raw=src.read_text(encoding="utf-8")
 
@@ -384,8 +385,9 @@ jobs:
           mkdir -p analysis_parts/mobile_targets
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
-          raw=Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw=Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out=Path("analysis_parts/mobile_targets")
           targets=["nce","Ihe","vle","zse","The","She","whe"]
           for name in targets:
@@ -438,9 +440,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re, json
 
-          src = Path("Wayward_MOD_v2.107.html")
+          src = Path(os.environ["WAYWARD_SOURCE_HTML"])
           out = Path("analysis_parts")
           raw = src.read_text(encoding="utf-8")
 
@@ -562,9 +565,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
 
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
@@ -654,11 +658,12 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
           import subprocess
           import tempfile
 
-          src = Path("Wayward_MOD_v2.107.html")
+          src = Path(os.environ["WAYWARD_SOURCE_HTML"])
           raw = src.read_text(encoding="utf-8")
           marker = '<style data-mobile-redesign="v1-debug-toggle">'
           added = False
@@ -715,8 +720,9 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
 
           def function_range(name):
@@ -774,9 +780,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
 
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
@@ -853,9 +860,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
 
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
@@ -953,8 +961,9 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
