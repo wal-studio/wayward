@@ -59,7 +59,7 @@ portrait용 화면을 게임 로직과 별개로 복제하지 않는다. status/
 ## 단계
 1. 자동 역할 분류 — 현재 번들에서 함수/상태/이벤트를 역할별로 맵핑한다.
 2. 모바일 UI 추출 — status/map/menu/debug/header부터 실제 모듈로 이동한다.
-3. screen/layout 추출 — `nce -> Ihe -> vle` 경계를 분리한다.
+3. screen/layout 추출 — 현재 원본에서 실제로 확인한 screen/layout 경계를 분리하며 minified symbol 이름은 고정하지 않는다.
 4. 엔진 경계 고정 — save/RNG/ID/undo/turn-state를 보존하며 필요한 경우에만 이동한다.
 5. 단일 HTML 번들 — 기존 배포 형태와 호환되는 결과물을 생성하고 검증한다.
 
