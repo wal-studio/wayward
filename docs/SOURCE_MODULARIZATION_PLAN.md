@@ -1,7 +1,7 @@
 # Wayward source modularization plan
 
 ## 목표
-`Wayward_MOD_v2.107.html`은 현재 약 7.40MB UTF-8의 단일 HTML이며, 실제 실행 코드는 하나의 약 5.36M-character module script에 번들된 상태다.
+현재 작업 기준 원본은 루트 HTML 파일이며, 실제 파일명·크기·해시·스크립트 구성은 분석 워크플로가 매 실행에서 산출한다. 과거 원본 파일명이나 크기를 현재 기준으로 고정하지 않는다.
 
 목표는 원본 게임 동작을 유지하면서 역할별 소스 경계를 만든 뒤, 최종 배포 시 다시 하나의 HTML artifact로 번들할 수 있게 하는 것이다.
 
@@ -48,7 +48,7 @@ src/
 ## 원칙
 
 ### 게임 엔진과 UI 분리
-save/RNG/ID/undo/turn-state는 먼저 재작성하지 않는다. 현재 동작을 기준선으로 고정한 뒤 UI부터 분리한다.
+save/RNG/ID/undo/turn-state는 먼저 재작성하지 않는다. 직전 작업에서 실제로 완료·검증한 동작을 기준으로 삼은 뒤 UI부터 분리한다.
 
 ### 모바일은 기존 상태/액션을 재사용
 portrait용 화면을 게임 로직과 별개로 복제하지 않는다. status/map/menu 같은 presentation만 모바일 surface로 제공한다.
