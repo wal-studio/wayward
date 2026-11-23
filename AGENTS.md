@@ -25,3 +25,6 @@ Separate source review, unit/integration tests, build, CI, artifact upload/downl
 
 ## Ownership
 Do not modify another team's repository or product area merely to resolve an integration issue. Verify contracts and compatibility, then hand off the exact evidence. Never transfer routine log polling, CI inspection, artifact retrieval, or available repository checks to the user.
+
+## Global development baseline
+Read and follow [GLOBAL_DEVELOPMENT_BASELINE.md](GLOBAL_DEVELOPMENT_BASELINE.md). It is mandatory for every task and branch. The latest actually completed and verified prior result is the default baseline; user-specified exceptions are scoped to the named task only. Carry this file into every new branch and repair missing/stale copies in existing branches.
