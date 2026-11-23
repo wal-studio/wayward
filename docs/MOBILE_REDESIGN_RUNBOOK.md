@@ -6,7 +6,7 @@
 ## 원칙
 1. 정식 원본 소스가 관리되는 기준 브랜치는 별도 승인 없이 수정하지 않는다. 모바일 수정은 현재 작업 브랜치에서 수행한다.
 2. 저장/불러오기, RNG, ID, 턴 처리, undo, 이벤트 판정 등 게임 엔진과 상태 경계를 변경하지 않는다.
-3. UI 변경은 가능한 한 상단 UI 라우터(`nce`), 메인 화면(`Ihe`), 메인 본문(`vle`) 및 모바일 전용 CSS/보조 UI에 한정한다.
+3. UI 변경은 현재 원본의 분석 결과에서 실제 존재가 확인된 UI 라우터·화면·본문 경계 및 모바일 전용 CSS/보조 UI에 한정한다. minified symbol 이름을 버전 간 고정하지 않는다.
 4. 수 MB 원본을 줄 단위로 자르지 않는다. 한 줄이 수백만 문자인 번들이므로, 분석용 파트는 **고정 문자 수**로 자른다.
 5. 모든 변경 후 JavaScript 문법 검사를 수행한다. 특히 inline script를 임시 JS 파일로 추출해 `node --check`를 통과시킨 뒤 커밋한다.
 6. 변경 범위를 diff로 확인해 게임 저장/런타임 로직이 의도치 않게 변하지 않았는지 검증한다.
@@ -57,7 +57,7 @@
 - 저장/undo/RNG/ID 관련 함수의 변경 금지를 선언한다.
 
 ### Phase 1 — 구조 분석
-- `nce` → `Ihe` → `vle` 및 header/menu/map/status 관련 컴포넌트를 식별한다.
+- 현재 component index와 compact context에서 UI 라우터 → 화면 → 본문 및 header/menu/map/status 경계를 추적한다. 이전 원본의 minified symbol은 현재 원본에서 재검증하기 전까지 사용하지 않는다.
 - drag/resize pointer 이벤트와 모바일 breakpoint를 식별한다.
 - 기존 `desk:*`, safe-area, 100dvh, overflow 규칙을 확인한다.
 
