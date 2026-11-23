@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "Wayward_MOD_v2.107.html"
+      - "*.html"
       - ".github/workflows/main.yml"
   workflow_dispatch:
 
@@ -23,18 +23,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Resolve current source HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t candidates < <(find . -maxdepth 1 -type f -iname '*.html' -printf '%f\\n' | sort)
+          if [ "${#candidates[@]}" -ne 1 ]; then
+            printf 'Expected exactly one root HTML source; found %s: %s\\n' "${#candidates[@]}" "${candidates[*]}" >&2
+            exit 1
+          fi
+          echo "WAYWARD_SOURCE_HTML=${candidates[0]}" >> "$GITHUB_ENV"
+          echo "Resolved source HTML: ${candidates[0]}"
+
       - name: Generate full-source analysis material
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import hashlib
           import json
           import re
           from collections import Counter
 
-          src = Path("Wayward_MOD_v2.107.html")
+          src = Path(os.environ["WAYWARD_SOURCE_HTML"])
           out = Path("analysis_parts")
           out.mkdir(exist_ok=True)
 
@@ -45,7 +58,7 @@ jobs:
           lines = raw.splitlines()
           total_lines = len(lines)
 
-          for p in out.glob("Wayward_MOD_v2.107.part*.txt"):
+          for p in out.glob(f"{src.stem}.part*.txt"):
               p.unlink()
 
           chunk_chars = 80_000
@@ -53,7 +66,7 @@ jobs:
           for offset in range(0, total_chars, chunk_chars):
               chunk = raw[offset:offset + chunk_chars]
               idx = len(parts) + 1
-              name = f"Wayward_MOD_v2.107.part{idx:03d}.txt"
+              name = f"{src.stem}.part{idx:03d}.txt"
               (out / name).write_text(chunk, encoding="utf-8")
               parts.append({
                   "name": name,
@@ -219,7 +232,7 @@ jobs:
           (out / "MANIFEST.txt").write_text("\n".join(manifest_txt) + "\n", encoding="utf-8")
 
           report = [
-              "# Wayward_MOD_v2.107 전체 소스 구조 분석",
+              f"# {src.stem} 전체 소스 구조 분석",
               "",
               "## 원본",
               f"- SHA-256: {sha256}",
@@ -972,7 +985,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add analysis_parts/ Wayward_MOD_v2.107.html
+          git add analysis_parts/ "$WAYWARD_SOURCE_HTML"
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0
