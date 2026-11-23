@@ -1,19 +1,36 @@
 from pathlib import Path
+import os
 import re
 import sys
 
-SOURCE = Path(sys.argv[1] if len(sys.argv) > 1 else "Wayward_MOD_v2.107.html")
-OUT = Path(sys.argv[2] if len(sys.argv) > 2 else "analysis_parts/role_map")
+args = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
+SOURCE = Path(args[0] if args else os.environ.get("WAYWARD_SOURCE_HTML", ""))
+OUT = Path(args[1] if len(args) > 1 else "analysis_parts/role_map")
+INCLUDE_LEGACY_SYMBOLS = "--include-legacy-symbols" in sys.argv
+if not str(SOURCE) or not SOURCE.is_file():
+    raise SystemExit("Provide an existing source HTML path as argv[1] or WAYWARD_SOURCE_HTML.")
 
 ROLE_RULES = {
-    "app": [r"^nce$", r"^Ihe$"],
-    "layout": [r"^vle$", r"^zse$", r"^whe$", r"^The$"],
-    "mobile-status": [r"^Pie$", r"^R3$", r"status", r"상태"],
-    "movement": [r"^jre$", r"^a5$", r"map", r"지도", r"이동", r"위치"],
-    "debug": [r"^She$", r"debug", r"toggle", r"wc2"],
-    "screens": [r"^Phe$", r"^zhe$", r"^Vhe$", r"^Khe$", r"^Jhe$", r"^Qhe$", r"^K5$"],
+    "app": [r"application", r"bootstrap", r"initialize", r"mount", r"router", r"route"],
+    "layout": [r"layout", r"pane", r"panel", r"sidebar", r"drawer", r"viewport", r"header", r"footer", r"portrait", r"landscape"],
+    "mobile-status": [r"status", r"상태", r"energy", r"patience", r"gold", r"gauge", r"stamina", r"기력", r"인내", r"금화"],
+    "movement": [r"map", r"지도", r"이동", r"위치", r"movement", r"direction", r"coordinate", r"tile"],
+    "debug": [r"debug", r"toggle", r"wc2"],
+    "screens": [r"screen", r"route", r"page", r"tab", r"story", r"choice", r"화면", r"이야기", r"선택"],
     "storage": [r"save", r"load", r"autosave", r"storage", r"import", r"export"],
 }
+
+LEGACY_SYMBOL_RULES = {
+    "app": [r"^nce$", r"^Ihe$"],
+    "layout": [r"^vle$", r"^zse$", r"^whe$", r"^The$"],
+    "mobile-status": [r"^Pie$", r"^R3$"],
+    "movement": [r"^jre$", r"^a5$"],
+    "debug": [r"^She$"],
+    "screens": [r"^Phe$", r"^zhe$", r"^Vhe$", r"^Khe$", r"^Jhe$", r"^Qhe$", r"^K5$"],
+}
+if INCLUDE_LEGACY_SYMBOLS:
+    for role, rules in LEGACY_SYMBOL_RULES.items():
+        ROLE_RULES[role].extend(rules)
 
 def find_body_end(text, open_index):
     depth = 0
@@ -106,5 +123,5 @@ for role, rows in roles.items():
     encoding="utf-8",
 )
 
-print(f"source={SOURCE} functions={len(found)}")
+print(f"source={SOURCE} functions={len(found)} legacy_symbol_rules={INCLUDE_LEGACY_SYMBOLS}")
 print("\n".join(manifest))
