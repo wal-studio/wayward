@@ -2,11 +2,16 @@ name: Split Wayward HTML for analysis
 
 on:
   push:
-    branches: [main]
     paths:
       - "*.html"
       - ".github/workflows/main.yml"
   workflow_dispatch:
+    inputs:
+      apply_mobile_patch:
+        description: 'Apply the guarded mobile UI patch to this explicitly selected branch'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: wayward-mobile-redesign-${{ github.ref }}
@@ -652,7 +657,7 @@ jobs:
           PY
 
       - name: Apply phase 1 mobile patch and validate
-        if: github.ref == 'refs/heads/mobile-redesign-v1'
+        if: github.event_name == 'workflow_dispatch' && inputs.apply_mobile_patch == true
         shell: bash
         run: |
           set -euo pipefail
