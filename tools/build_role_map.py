@@ -100,6 +100,10 @@ for name, line, size, body in found:
     for role, rules in ROLE_RULES.items():
         if any(re.search(rule, hay, re.I) for rule in rules):
             matched.append(role)
+    if INCLUDE_LEGACY_SYMBOLS:
+        for role, rules in LEGACY_SYMBOL_RULES.items():
+            if any(re.search(rule, name, re.I) for rule in rules):
+                matched.append(role)
     if not matched:
         matched = ["shared"]
     for role in matched[:2]:
@@ -117,8 +121,9 @@ for role, rows in roles.items():
     manifest.append(f"- {role}: {len(rows)} functions")
 
 (OUT / "README.md").write_text(
-    "Generated semantic role map. This directory is analysis output, not executable source. "
-    "It maps semantic owners before code is physically extracted into src/.\n\n"
+    "Generated semantic role map tied to the selected source and its run manifest. "
+    "This directory is analysis output, not executable source or a permanent development baseline. "
+    "Historical minified-symbol rules are included only when explicitly enabled.\n\n"
     + "\n".join(manifest) + "\n",
     encoding="utf-8",
 )
