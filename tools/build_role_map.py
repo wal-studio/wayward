@@ -28,10 +28,6 @@ LEGACY_SYMBOL_RULES = {
     "debug": [r"^She$"],
     "screens": [r"^Phe$", r"^zhe$", r"^Vhe$", r"^Khe$", r"^Jhe$", r"^Qhe$", r"^K5$"],
 }
-if INCLUDE_LEGACY_SYMBOLS:
-    for role, rules in LEGACY_SYMBOL_RULES.items():
-        ROLE_RULES[role].extend(rules)
-
 def find_body_end(text, open_index):
     depth = 0
     quote = None
@@ -102,7 +98,7 @@ for name, line, size, body in found:
             matched.append(role)
     if INCLUDE_LEGACY_SYMBOLS:
         for role, rules in LEGACY_SYMBOL_RULES.items():
-            if any(re.search(rule, name, re.I) for rule in rules):
+            if role not in matched and any(re.search(rule, name, re.I) for rule in rules):
                 matched.append(role)
     if not matched:
         matched = ["shared"]
