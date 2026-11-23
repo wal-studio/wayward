@@ -46,7 +46,7 @@ jobs:
           source_html=""
           if [[ -n "$REQUESTED_SOURCE_HTML" ]]; then
             source_html="$REQUESTED_SOURCE_HTML"
-            if [[ "$source_html" == */* || "$source_html" != *.html || ! -f "$source_html" ]]; then
+            if [[ "$source_html" == */* || "${source_html,,}" != *.html || ! -f "$source_html" ]]; then
               echo "source_html must name an existing root-level .html file" >&2
               exit 1
             fi
@@ -58,6 +58,10 @@ jobs:
               printf 'Multiple root HTML sources changed; dispatch manually with source_html: %s\n' "${changed_html[*]}" >&2
               exit 1
             fi
+          fi
+          if [[ -n "$source_html" && ! -f "$source_html" ]]; then
+            echo "Selected source HTML does not exist: $source_html" >&2
+            exit 1
           fi
           if [[ -z "$source_html" ]]; then
             mapfile -t candidates < <(find . -maxdepth 1 -type f -iname '*.html' -printf '%f\n' | sort)
