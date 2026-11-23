@@ -24,14 +24,17 @@
 1. 원본 전체를 읽고 SHA-256/문자 수/byte 수/line 수를 기록한다.
 2. 80,000 characters 단위로 `analysis_parts/{source-stem}.partNNN.txt`를 생성한다.
 3. `MANIFEST.json`, `STATIC_REPORT.md`, `UI_COMPONENT_INDEX.md`, `UI_SNIPPETS.md`, CSS/HTML 분석 자료를 생성한다.
-4. `nce/Ihe/vle/zse/The/She/whe` 및 관련 runtime/mobile interaction을 별도 target context로 추출한다.
-5. compact patch context를 생성해 실제 패치 시 대용량 원문 조회를 피한다.
-6. 결과를 저장소에 커밋한다.
+4. 기본 실행은 원본 구조·CSS·UI component index 등 버전 독립적인 산출물을 생성한다.
+5. 과거 번들의 minified symbol 기반 target context는 기본 비활성화하며, 필요할 때만 workflow_dispatch의 `include_legacy_mobile_targets=true`로 실행한다. 과거 심볼이 현재 원본에 없으면 누락 결과를 근거로 새 심볼을 추측하지 않는다.
+6. compact context를 생성해 실제 패치 시 대용량 원문 조회를 피한다.
+7. 결과를 실행된 동일 ref에 커밋한다.
 
 ## 브랜치 실행/안전 장치
-- 원본 HTML 변경 감지는 현재 ref에 적용되며, 분석 산출물은 실행된 동일 ref에 반영한다.
+- push 분석은 저장소의 설정된 기본 브랜치에서만 자동 실행하고, workflow_dispatch는 선택한 작업 브랜치에서 수동 실행할 수 있다.
+- 원본 HTML 변경 감지는 현재 push에서 변경된 루트 HTML을 우선 선택하며, 분석 산출물은 실행된 동일 ref에 반영한다.
 - workflow concurrency는 현재 ref 단위로 중복 실행을 직렬화한다.
 - 모바일 patch는 workflow_dispatch의 `apply_mobile_patch=true`를 명시적으로 선택한 비기본 브랜치 실행에서만 동작한다. 특정 브랜치명에 종속되지 않는다.
+- 과거 minified symbol 분석은 workflow_dispatch의 `include_legacy_mobile_targets=true`를 명시적으로 선택해야 실행된다.
 - patch는 정확한 기존 target 문자열이 없어지면 `PATCH_GUARD_FAILED`로 중단한다.
 - patch marker가 이미 존재하면 다시 삽입하지 않는다.
 - source와 analysis를 함께 stage하고 remote를 fetch/rebase한 뒤 push한다.
