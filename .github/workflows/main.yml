@@ -4,9 +4,19 @@ on:
   push:
     branches: [main]
     paths:
-      - "Wayward_MOD_v2.107.html"
-      - ".github/workflows/main.yml"
+      - "*.html"
   workflow_dispatch:
+    inputs:
+      source_html:
+        description: 'Optional root HTML filename; select one when the branch contains multiple HTML files'
+        required: false
+        type: string
+        default: ''
+      apply_mobile_patch:
+        description: 'Apply the guarded mobile UI patch to this explicitly selected branch'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: wayward-mobile-redesign-${{ github.ref }}
@@ -22,6 +32,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve current source HTML
+        shell: bash
+        env:
+          REQUESTED_SOURCE_HTML: ${{ inputs.source_html }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          EVENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          source_html=""
+          if [[ -n "$REQUESTED_SOURCE_HTML" ]]; then
+            source_html="$REQUESTED_SOURCE_HTML"
+            if [[ "$source_html" == */* || "$source_html" != *.html || ! -f "$source_html" ]]; then
+              echo "source_html must name an existing root-level .html file" >&2
+              exit 1
+            fi
+          elif [[ "$EVENT_NAME" == "push" && -n "$EVENT_BEFORE" && "$EVENT_BEFORE" != "0000000000000000000000000000000000000000" ]]; then
+            mapfile -t changed_html < <(git diff --name-only "$EVENT_BEFORE" "$EVENT_SHA" -- '*.html' | awk 'index($0, "/") == 0' | sort -u)
+            if [[ "${#changed_html[@]}" -eq 1 ]]; then
+              source_html="${changed_html[0]}"
+            elif [[ "${#changed_html[@]}" -gt 1 ]]; then
+              printf 'Multiple root HTML sources changed; dispatch manually with source_html: %s\n' "${changed_html[*]}" >&2
+              exit 1
+            fi
+          fi
+          if [[ -z "$source_html" ]]; then
+            mapfile -t candidates < <(find . -maxdepth 1 -type f -iname '*.html' -printf '%f\n' | sort)
+            if [[ "${#candidates[@]}" -ne 1 ]]; then
+              printf 'Could not select one source HTML. Found %s candidates: %s. Use workflow_dispatch input source_html.\n' "${#candidates[@]}" "${candidates[*]}" >&2
+              exit 1
+            fi
+            source_html="${candidates[0]}"
+          fi
+          echo "WAYWARD_SOURCE_HTML=$source_html" >> "$GITHUB_ENV"
+          echo "Resolved source HTML: $source_html"
 
       - name: Generate full-source analysis material
         shell: bash
@@ -635,7 +683,7 @@ jobs:
           PY
 
       - name: Apply phase 1 mobile patch and validate
-        if: github.ref == 'refs/heads/mobile-redesign-v1'
+        if: github.event_name == 'workflow_dispatch' && inputs.apply_mobile_patch == true && github.ref_name != github.event.repository.default_branch && github.ref_name != github.event.repository.default_branch
         shell: bash
         run: |
           set -euo pipefail
