@@ -1,22 +1,52 @@
 name: Extract compact mobile patch contexts
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "Wayward_MOD_v2.107.html"
-      - ".github/workflows/mobile-compact-context.yml"
   workflow_dispatch:
+    inputs:
+      source_html:
+        description: 'Root HTML filename; required when the branch contains multiple HTML files'
+        required: false
+        type: string
+        default: ''
+      include_legacy_mobile_targets:
+        description: 'Run the historical minified-symbol context extractor'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
   extract:
+    if: inputs.include_legacy_mobile_targets == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve current source HTML
+        shell: bash
+        env:
+          REQUESTED_SOURCE_HTML: ${{ inputs.source_html }}
+        run: |
+          set -euo pipefail
+          source_html="$REQUESTED_SOURCE_HTML"
+          if [[ -n "$source_html" ]]; then
+            if [[ "$source_html" == */* || "${source_html,,}" != *.html || ! -f "$source_html" ]]; then
+              echo "source_html must name an existing root-level .html file" >&2
+              exit 1
+            fi
+          else
+            mapfile -t candidates < <(find . -maxdepth 1 -type f -iname '*.html' -printf '%f\n' | sort)
+            if [[ "${#candidates[@]}" -ne 1 ]]; then
+              printf 'Select source_html explicitly; found %s candidates: %s\n' "${#candidates[@]}" "${candidates[*]}" >&2
+              exit 1
+            fi
+            source_html="${candidates[0]}"
+          fi
+          echo "WAYWARD_SOURCE_HTML=$source_html" >> "$GITHUB_ENV"
+          echo "Resolved source HTML: $source_html"
 
       - name: Extract small mobile patch contexts
         shell: bash
@@ -24,9 +54,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
 
-          src = Path("Wayward_MOD_v2.107.html")
+          src = Path(os.environ["WAYWARD_SOURCE_HTML"])
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
           raw = src.read_text(encoding="utf-8")
