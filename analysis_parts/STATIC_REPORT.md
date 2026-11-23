@@ -1,15 +1,15 @@
-# Wayward_MOD_v2.107 전체 소스 구조 분석
+# Wayward_WML_ko 전체 소스 구조 분석
 
 ## 원본
-- SHA-256: c03d60f6814909000eb27bfce23db3467f749cfb2c6cdd083cd2a40e80854d76
-- UTF-8 bytes: 7,399,245
-- characters: 5,630,327
-- lines: 6,808
-- max single line: 2,468,306 chars (line 5044)
+- SHA-256: e159fb2002d31559b1ac1936cf6b48cdbbdc4858bfbb0b67e2d7284ca2195d1d
+- UTF-8 bytes: 4,373,978
+- characters: 3,506,141
+- lines: 491
+- max single line: 502,647 chars (line 89)
 
 ## UI HTML
-- body chars: 30
-- UI HTML chars after removing script/style: 30
+- body chars: 221
+- UI HTML chars after removing script/style: 221
 - id count: 1
 - duplicate id count: 0
 - class tokens: 0
@@ -17,11 +17,14 @@
 
 ### HTML tags
 - div: 1
+- noscript: 1
+- p: 1
+- a: 1
 
 ## CSS
-- style blocks: 5
-- CSS chars: 96,537
-- CSS rule candidates: 1,259
+- style blocks: 1
+- CSS chars: 68,795
+- CSS rule candidates: 1,090
 
 ### media queries
 - (min-width:640px)
@@ -37,89 +40,86 @@
 - (min-width:1400px)
 - (min-width:1600px)
 - (min-width:1920px)
-- (min-width:640px)
-- (min-width:640px)
 
 ### common properties
-- background-color: 281
-- color: 269
-- border-color: 128
-- --tw-text-opacity: 88
-- --tw-bg-opacity: 77
-- --tw-border-opacity: 64
-- width: 37
-- font-size: 36
-- hover: 36
-- padding-right: 30
+- background-color: 197
+- color: 127
+- border-color: 95
+- --tw-text-opacity: 91
+- --tw-bg-opacity: 80
+- --tw-border-opacity: 65
+- width: 45
+- font-size: 35
+- height: 31
+- max-width: 30
+- padding-right: 29
+- padding-top: 28
+- margin-top: 27
 - padding-left: 27
-- padding-top: 27
-- display: 25
-- margin-top: 25
-- padding-bottom: 25
-- height: 24
-- max-width: 24
-- margin-bottom: 23
-- padding: 22
-- opacity: 21
+- padding-bottom: 27
+- display: 26
+- opacity: 23
+- margin-bottom: 22
 - line-height: 20
+- padding: 20
+- min-width: 20
 - --tw-shadow: 19
-- min-width: 19
-- box-shadow: 16
 - border-left-color: 16
-- background: 16
-- gap: 15
-- grid-template-columns: 14
-- border-radius: 13
-- margin-left: 13
-- margin-right: 12
+- box-shadow: 15
+- border-radius: 14
+- gap: 14
+- margin-right: 13
+- max-height: 13
+- grid-template-columns: 13
+- margin-left: 12
+- min-height: 12
 - top: 11
-- max-height: 11
-- min-height: 11
+- transform: 11
 - --tw-ring-color: 10
+- cursor: 10
 - --tw-shadow-color: 10
 - --tw-shadow-colored: 9
-- transform: 9
-- position: 8
+- background: 9
+- margin: 8
 - bottom: 8
-- cursor: 8
 - right: 8
 - --tw-space-y-reverse: 8
 - transition-duration: 8
 - --tw-ring-offset-shadow: 7
 - --tw-ring-shadow: 7
 - font-weight: 7
-- z-index: 7
+- position: 7
 - -moz-column-gap: 7
 - column-gap: 7
 - --tw-ring-opacity: 7
-- disabled: 7
 - border-width: 6
-- font-family: 6
-- margin: 6
-- align-items: 6
+- -webkit-appearance: 6
+- z-index: 6
 - transition-timing-function: 6
 - --tw-scale-x: 5
 - --tw-scale-y: 5
+- font-family: 5
 - border-top-width: 5
 - vertical-align: 5
 - letter-spacing: 5
 - text-transform: 5
 - input: 5
 - left: 5
-- justify-content: 5
+- align-items: 5
+- border-right-width: 5
 - border-bottom-width: 5
 - transition-property: 5
-- --wm-accent: 5
-- --wm-focus: 5
-- -webkit-appearance: 4
+- --tw-translate-y: 4
 - outline: 4
-- outline-offset: 4
 - overflow: 4
 - visibility: 4
-- border-right-width: 4
+- justify-content: 4
 - border-left-width: 4
+- align-self: 4
+- white-space: 4
 - filter: 4
-- --tw-translate-y: 3
+- fate-slider: 4
+- --tw-translate-x: 3
 - --tw-ordinal: 3
 - --tw-numeric-spacing: 3
 - --tw-ring-offset-width: 3
@@ -131,22 +131,22 @@
 - font-feature-settings: 3
 - font-variation-settings: 3
 - background-image: 3
+- outline-offset: 3
 - resize: 3
 - grid-column: 3
-- aspect-ratio: 3
+- flex: 3
 - flex-shrink: 3
 - animation: 3
 - row-gap: 3
-- align-self: 3
-- white-space: 3
+- border-bottom-right-radius: 3
 - border-top-right-radius: 3
 - --tw-gradient-to: 3
+- text-align: 3
 
 ### largest CSS rules
 - [style 1] *,:before,:after => --tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-off
 - [style 1] ::backdrop => --tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-off
 - [style 1] .backdrop-blur-sm => --tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdro
-- [style 4] #ko-theme-popover => position:absolute;top:calc(100% + 5px);right:0;z-index:100010;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;width:min(235px,calc(100vw - 12px));padding:9px;background:var(--wm-bg900);color:var(--wm-text100);border:1px solid var(--wm-bg600);border-radius:9px;box-shadow:0 12px 30px #0008
 - [style 1] .ring => --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)
 - [style 1] .ring-1 => --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)
 - [style 1] .ring-2 => --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)
@@ -158,17 +158,14 @@
 - [style 1] .shadow-md => --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1);--tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)
 - [style 1] .shadow => --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)
 - [style 1] html,:host => line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent
-- [style 4] /* v2.102: device-only UI themes. Default does not override the original design. */ body => --wm-bg950:#0c0a09;--wm-bg900:#1c1917;--wm-bg800:#292524;--wm-bg700:#44403c;--wm-bg600:#57534e;--wm-text100:#f5f5f4;--wm-text200:#e7e5e4;--wm-text300:#d6d3d1;--wm-text400:#a8a29e;--wm-text500:#78716c;--wm-accent:#fbbf24;--wm-focus:#f59e0b
-- [style 4] body[data-wayward-theme="ivory"] => --wm-bg950:#d4d8da;--wm-bg900:#e2e5e6;--wm-bg800:#d8dddf;--wm-bg700:#d2d8da;--wm-bg600:#adb7bb;--wm-text100:#293236;--wm-text200:#303b40;--wm-text300:#414e54;--wm-text400:#515e64;--wm-text500:#526066;--wm-accent:#805022;--wm-focus:#875828
-- [style 4] body[data-wayward-theme="charcoal"] => --wm-bg950:#090c0f;--wm-bg900:#12171b;--wm-bg800:#1d2429;--wm-bg700:#2c363e;--wm-bg600:#41505a;--wm-text100:#f2f5f5;--wm-text200:#e1e9e9;--wm-text300:#cbd6d8;--wm-text400:#a6b5b9;--wm-text500:#8799a0;--wm-accent:#e8b974;--wm-focus:#d69b53
-- [style 4] body[data-wayward-theme="midnight"] => --wm-bg950:#071020;--wm-bg900:#0d1930;--wm-bg800:#182644;--wm-bg700:#283a5d;--wm-bg600:#41577d;--wm-text100:#eef4ff;--wm-text200:#dce7fa;--wm-text300:#bdcfea;--wm-text400:#98b0d5;--wm-text500:#839ec7;--wm-accent:#99c5ff;--wm-focus:#78b2ff
-- [style 4] body[data-wayward-theme="sage"] => --wm-bg950:#0b1917;--wm-bg900:#10221f;--wm-bg800:#1c312b;--wm-bg700:#30473c;--wm-bg600:#496354;--wm-text100:#f1f6ee;--wm-text200:#dfeadf;--wm-text300:#c6dbc8;--wm-text400:#a6c2ab;--wm-text500:#88a791;--wm-accent:#b6df9d;--wm-focus:#94c77b
 - [style 1] .active\:scale-\[0\.98\]:active => --tw-scale-x: .98;--tw-scale-y: .98;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
 - [style 1] .group:hover .group-hover\:scale-110 => --tw-scale-x: 1.1;--tw-scale-y: 1.1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
 - [style 1] .disabled\:active\:scale-100:active:disabled => --tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
 - [style 1] body => --tw-bg-opacity: 1;background-color:rgb(26 26 26 / var(--tw-bg-opacity, 1));--tw-text-opacity: 1;color:rgb(224 224 224 / var(--tw-text-opacity, 1));font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif
 - [style 1] .transition => transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s
 - [style 1] .hover\:-translate-y-0\.5:hover => --tw-translate-y: -.125rem;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
+- [style 1] .-translate-x-1\/2 => --tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
+- [style 1] .-translate-y-1\/2 => --tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
 - [style 1] .shadow-2xl => --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / .25);--tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)
 - [style 1] .hover\:brightness-125:hover => --tw-brightness: brightness(1.25);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)
 - [style 1] .from-stone-900\/90 => --tw-gradient-from: rgb(28 25 23 / .9) var(--tw-gradient-from-position);--tw-gradient-to: rgb(28 25 23 / 0) var(--tw-gradient-to-position);--tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
@@ -179,7 +176,7 @@
 - [style 1] .shadow-\[inset_0_2px_0_theme\(colors\.amber\.400\)\] => --tw-shadow: inset 0 2px 0 #fbbf24;--tw-shadow-colored: inset 0 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)
 - [style 1] button,input,optgroup,select,textarea => font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0
 - [style 1] .transform => transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
-- [style 4] #ko-theme-popover button => display:flex;flex-direction:column;align-items:center;justify-content:start;gap:3px;min-width:0;padding:3px 0;border-radius:5px;font:10px/1.1 system-ui,'Malgun Gothic',sans-serif
+- [style 1] .fate-slider::-webkit-slider-thumb => -webkit-appearance:none;-moz-appearance:none;appearance:none;width:28px;height:28px;border-radius:9999px;background:#f59e0b;border:2px solid #78350f;cursor:pointer;margin-top:-11px
 - [style 1] .filter => filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)
 - [style 1] .tabular-nums => --tw-numeric-spacing: tabular-nums;font-variant-numeric:var(--tw-ordinal) var(--tw-slashed-zero) var(--tw-numeric-figure) var(--tw-numeric-spacing) var(--tw-numeric-fraction)
 - [style 1] .transition-colors => transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s
@@ -193,708 +190,712 @@
 - [style 1] .space-y-3>:not([hidden])~:not([hidden]) => --tw-space-y-reverse: 0;margin-top:calc(.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem * var(--tw-space-y-reverse))
 - [style 1] .space-y-6>:not([hidden])~:not([hidden]) => --tw-space-y-reverse: 0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))
 - [style 1] .space-y-2>:not([hidden])~:not([hidden]) => --tw-space-y-reverse: 0;margin-top:calc(.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem * var(--tw-space-y-reverse))
+- [style 1] .fate-slider => -webkit-appearance:none;-moz-appearance:none;appearance:none;width:100%;height:32px;background:transparent;outline:none;touch-action:pan-y
 - [style 1] .space-y-4>:not([hidden])~:not([hidden]) => --tw-space-y-reverse: 0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))
 - [style 1] code,kbd,samp,pre => font-family:JetBrains Mono,Fira Code,Consolas,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em
-- [style 4] body[data-wayward-theme] [class~="bg-amber-900/30"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 75%,var(--wm-focus)) 30%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-900/40"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 75%,var(--wm-focus)) 40%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-900/60"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 75%,var(--wm-focus)) 60%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-950/30"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 85%,var(--wm-focus)) 30%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-950/40"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 85%,var(--wm-focus)) 40%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-950/50"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 85%,var(--wm-focus)) 50%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-950/60"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 85%,var(--wm-focus)) 60%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="hover:bg-amber-950/40"]:hover => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 85%,var(--wm-focus)) 40%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-500/90"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 0%,var(--wm-focus)) 90%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="bg-amber-700/70"] => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 0%,var(--wm-focus)) 70%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="hover:bg-amber-500/70"]:hover => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 0%,var(--wm-focus)) 70%,transparent)!important
-- [style 4] body[data-wayward-theme] [class~="hover:bg-amber-700/80"]:hover => background-color:color-mix(in srgb,color-mix(in srgb,var(--wm-bg900) 0%,var(--wm-focus)) 80%,transparent)!important
 - [style 1] .transition-transform => transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s
 - [style 1] .transition-opacity => transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s
+- [style 1] .fate-slider::-moz-range-thumb => width:28px;height:28px;border-radius:9999px;background:#f59e0b;border:2px solid #78350f;cursor:pointer
 - [style 1] .transition-all => transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-blue-900/60"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#1e40af)!important;color:#1e40af!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-emerald-700/80"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#065f46)!important;color:#065f46!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-emerald-900/40"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#065f46)!important;color:#065f46!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-green-950/30"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#166534)!important;color:#166534!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-green-950/40"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#166534)!important;color:#166534!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-orange-700"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9a3412)!important;color:#9a3412!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-orange-950/30"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9a3412)!important;color:#9a3412!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-pink-900/30"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9d174d)!important;color:#9d174d!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-pink-900/60"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9d174d)!important;color:#9d174d!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-pink-950/20"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9d174d)!important;color:#9d174d!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-pink-950/40"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9d174d)!important;color:#9d174d!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-700"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-800"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-900/80"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-950/10"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-950/20"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-950/30"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-950/35"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-950/40"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-950/50"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-red-950/70"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-700/80"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-800"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-900/40"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-900/90"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-950/25"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-950/30"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-950/40"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-950/50"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-rose-950/60"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-teal-900/60"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#115e59)!important;color:#115e59!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-violet-900/30"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#5b21b6)!important;color:#5b21b6!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-violet-900/40"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#5b21b6)!important;color:#5b21b6!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-violet-900/60"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#5b21b6)!important;color:#5b21b6!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-violet-950/20"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#5b21b6)!important;color:#5b21b6!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-violet-950/60"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#5b21b6)!important;color:#5b21b6!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="bg-yellow-950/25"] => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#854d0e)!important;color:#854d0e!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-emerald-700/80"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#065f46)!important;color:#065f46!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-red-700"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-red-950/40"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-red-950/70"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#991b1b)!important;color:#991b1b!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-rose-700"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-rose-700/80"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-rose-800"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-rose-950"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#9f1239)!important;color:#9f1239!important
-- [style 5] body[data-wayward-theme="ivory"] [class~="hover:bg-violet-900/70"]:hover => background-color:color-mix(in srgb,var(--wm-bg900) 92%,#5b21b6)!important;color:#5b21b6!important
-- [style 4] #ko-theme-popover .ko-theme-dot => display:block;width:23px;height:23px;border:2px solid var(--wm-text400);border-radius:50%
 - [style 1] .border-l-violet-500 => --tw-border-opacity: 1;border-left-color:rgb(139 92 246 / var(--tw-border-opacity, 1))
 - [style 1] .border-l-violet-700 => --tw-border-opacity: 1;border-left-color:rgb(109 40 217 / var(--tw-border-opacity, 1))
 - [style 1] .border-l-amber-600 => --tw-border-opacity: 1;border-left-color:rgb(217 119 6 / var(--tw-border-opacity, 1))
 - [style 1] .border-l-blue-700 => --tw-border-opacity: 1;border-left-color:rgb(29 78 216 / var(--tw-border-opacity, 1))
 - [style 1] .border-l-green-700 => --tw-border-opacity: 1;border-left-color:rgb(21 128 61 / var(--tw-border-opacity, 1))
 - [style 1] .border-l-green-800 => --tw-border-opacity: 1;border-left-color:rgb(22 101 52 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-orange-700 => --tw-border-opacity: 1;border-left-color:rgb(194 65 12 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-red-600 => --tw-border-opacity: 1;border-left-color:rgb(220 38 38 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-red-700 => --tw-border-opacity: 1;border-left-color:rgb(185 28 28 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-rose-600 => --tw-border-opacity: 1;border-left-color:rgb(225 29 72 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-rose-700 => --tw-border-opacity: 1;border-left-color:rgb(190 18 60 / var(--tw-border-opacity, 1))
+- [style 1] .placeholder-stone-500::-moz-placeholder => --tw-placeholder-opacity: 1;color:rgb(120 113 108 / var(--tw-placeholder-opacity, 1))
+- [style 1] .placeholder-stone-500::placeholder => --tw-placeholder-opacity: 1;color:rgb(120 113 108 / var(--tw-placeholder-opacity, 1))
+- [style 1] .line-clamp-2 => overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2
+- [style 1] .border-l-amber-700 => --tw-border-opacity: 1;border-left-color:rgb(180 83 9 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-stone-600 => --tw-border-opacity: 1;border-left-color:rgb(87 83 78 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-stone-700 => --tw-border-opacity: 1;border-left-color:rgb(68 64 60 / var(--tw-border-opacity, 1))
+- [style 1] .border-l-yellow-700 => --tw-border-opacity: 1;border-left-color:rgb(161 98 7 / var(--tw-border-opacity, 1))
+- [style 1] .border-pink-400 => --tw-border-opacity: 1;border-color:rgb(244 114 182 / var(--tw-border-opacity, 1))
+- [style 1] .border-stone-200 => --tw-border-opacity: 1;border-color:rgb(231 229 228 / var(--tw-border-opacity, 1))
+- [style 1] .border-stone-500 => --tw-border-opacity: 1;border-color:rgb(120 113 108 / var(--tw-border-opacity, 1))
+- [style 1] .ring-stone-500 => --tw-ring-opacity: 1;--tw-ring-color: rgb(120 113 108 / var(--tw-ring-opacity, 1))
+- [style 1] .hover\:border-stone-400:hover => --tw-border-opacity: 1;border-color:rgb(168 162 158 / var(--tw-border-opacity, 1))
+- [style 1] .hover\:border-stone-500:hover => --tw-border-opacity: 1;border-color:rgb(120 113 108 / var(--tw-border-opacity, 1))
+- [style 1] .focus\:border-stone-500:focus => --tw-border-opacity: 1;border-color:rgb(120 113 108 / var(--tw-border-opacity, 1))
+- [style 1] .border-amber-400 => --tw-border-opacity: 1;border-color:rgb(251 191 36 / var(--tw-border-opacity, 1))
+- [style 1] .border-amber-500 => --tw-border-opacity: 1;border-color:rgb(245 158 11 / var(--tw-border-opacity, 1))
+- [style 1] .border-emerald-500 => --tw-border-opacity: 1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))
+- [style 1] .border-indigo-500 => --tw-border-opacity: 1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))
+- [style 1] .border-pink-600 => --tw-border-opacity: 1;border-color:rgb(219 39 119 / var(--tw-border-opacity, 1))
+- [style 1] .border-teal-700 => --tw-border-opacity: 1;border-color:rgb(15 118 110 / var(--tw-border-opacity, 1))
+- [style 1] .border-violet-600 => --tw-border-opacity: 1;border-color:rgb(124 58 237 / var(--tw-border-opacity, 1))
+- [style 1] .border-violet-700 => --tw-border-opacity: 1;border-color:rgb(109 40 217 / var(--tw-border-opacity, 1))
+- [style 1] .ring-green-400 => --tw-ring-opacity: 1;--tw-ring-color: rgb(74 222 128 / var(--tw-ring-opacity, 1))
+- [style 1] .hover\:border-amber-500:hover => --tw-border-opacity: 1;border-color:rgb(245 158 11 / var(--tw-border-opacity, 1))
+- [style 1] .focus\:border-amber-500:focus => --tw-border-opacity: 1;border-color:rgb(245 158 11 / var(--tw-border-opacity, 1))
+- [style 1] .focus-visible\:ring-game-primary:focus-visible => --tw-ring-opacity: 1;--tw-ring-color: rgb(124 58 237 / var(--tw-ring-opacity, 1))
+- [style 1] .border-amber-600 => --tw-border-opacity: 1;border-color:rgb(217 119 6 / var(--tw-border-opacity, 1))
+- [style 1] .border-amber-800 => --tw-border-opacity: 1;border-color:rgb(146 64 14 / var(--tw-border-opacity, 1))
+- [style 1] .border-blue-700 => --tw-border-opacity: 1;border-color:rgb(29 78 216 / var(--tw-border-opacity, 1))
+- [style 1] .border-emerald-600 => --tw-border-opacity: 1;border-color:rgb(5 150 105 / var(--tw-border-opacity, 1))
+- [style 1] .border-game-border => --tw-border-opacity: 1;border-color:rgb(74 67 101 / var(--tw-border-opacity, 1))
+- [style 1] .border-green-600 => --tw-border-opacity: 1;border-color:rgb(22 163 74 / var(--tw-border-opacity, 1))
+- [style 1] .border-green-700 => --tw-border-opacity: 1;border-color:rgb(21 128 61 / var(--tw-border-opacity, 1))
+- [style 1] .border-green-800 => --tw-border-opacity: 1;border-color:rgb(22 101 52 / var(--tw-border-opacity, 1))
+- [style 1] .border-orange-700 => --tw-border-opacity: 1;border-color:rgb(194 65 12 / var(--tw-border-opacity, 1))
+- [style 1] .border-pink-700 => --tw-border-opacity: 1;border-color:rgb(190 24 93 / var(--tw-border-opacity, 1))
+- [style 1] .border-red-600 => --tw-border-opacity: 1;border-color:rgb(220 38 38 / var(--tw-border-opacity, 1))
+- [style 1] .border-red-700 => --tw-border-opacity: 1;border-color:rgb(185 28 28 / var(--tw-border-opacity, 1))
+- [style 1] .border-red-800 => --tw-border-opacity: 1;border-color:rgb(153 27 27 / var(--tw-border-opacity, 1))
+- [style 1] .border-red-900 => --tw-border-opacity: 1;border-color:rgb(127 29 29 / var(--tw-border-opacity, 1))
+- [style 1] .border-rose-600 => --tw-border-opacity: 1;border-color:rgb(225 29 72 / var(--tw-border-opacity, 1))
+- [style 1] .border-rose-700 => --tw-border-opacity: 1;border-color:rgb(190 18 60 / var(--tw-border-opacity, 1))
+- [style 1] .border-rose-800 => --tw-border-opacity: 1;border-color:rgb(159 18 57 / var(--tw-border-opacity, 1))
+- [style 1] .border-rose-900 => --tw-border-opacity: 1;border-color:rgb(136 19 55 / var(--tw-border-opacity, 1))
+- [style 1] .border-yellow-500 => --tw-border-opacity: 1;border-color:rgb(234 179 8 / var(--tw-border-opacity, 1))
+- [style 1] .border-yellow-600 => --tw-border-opacity: 1;border-color:rgb(202 138 4 / var(--tw-border-opacity, 1))
+- [style 1] .ring-green-600 => --tw-ring-opacity: 1;--tw-ring-color: rgb(22 163 74 / var(--tw-ring-opacity, 1))
+- [style 1] .ring-pink-800 => --tw-ring-opacity: 1;--tw-ring-color: rgb(157 23 77 / var(--tw-ring-opacity, 1))
+- [style 1] .ring-red-500 => --tw-ring-opacity: 1;--tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1))
+- [style 1] .ring-yellow-500 => --tw-ring-opacity: 1;--tw-ring-color: rgb(234 179 8 / var(--tw-ring-opacity, 1))
+- [style 1] .hover\:border-amber-600:hover => --tw-border-opacity: 1;border-color:rgb(217 119 6 / var(--tw-border-opacity, 1))
+- [style 1] .hover\:border-red-500:hover => --tw-border-opacity: 1;border-color:rgb(239 68 68 / var(--tw-border-opacity, 1))
+- [style 1] .hover\:border-red-700:hover => --tw-border-opacity: 1;border-color:rgb(185 28 28 / var(--tw-border-opacity, 1))
+- [style 1] .hover\:border-rose-700:hover => --tw-border-opacity: 1;border-color:rgb(190 18 60 / var(--tw-border-opacity, 1))
+- [style 1] .divide-stone-800>:not([hidden])~:not([hidden]) => --tw-divide-opacity: 1;border-color:rgb(41 37 36 / var(--tw-divide-opacity, 1))
+- [style 1] .border-amber-700 => --tw-border-opacity: 1;border-color:rgb(180 83 9 / var(--tw-border-opacity, 1))
 
 ## JavaScript
-- script blocks: 1
-- named functions: 2,752
-- addEventListener types: {'test': 1, 'wayward-image-notice297': 1, 'scroll': 2, 'resize': 2, 'pointerdown': 3, 'keydown': 10, 'change': 13, 'pointermove': 2, 'pointerup': 2, 'dragstart': 1, 'wayward-image-connection297': 1, 'error': 1, 'unhandledrejection': 1, 'click': 16, 'focus': 1, 'input': 3, 'DOMContentLoaded': 1}
-- DOM selector calls: 17
+- script blocks: 8
+- named functions: 4,630
+- addEventListener types: {'test': 1, 'scroll': 1, 'resize': 1, 'pointerdown': 1, 'keydown': 8, 'change': 1, 'pointermove': 2, 'pointerup': 2, 'pointercancel': 2, 'dragstart': 1, 'error': 1, 'unhandledrejection': 1}
+- DOM selector calls: 3
 
 ### storage keys
-- wayward-mod-settings-v1
+- tavern-game
 
 ### network targets
 
 ### notable function names
-- line 219: koValidSaveState175()
-- line 228: koHasAutosave175()
-- line 235: koHasAutosave175()
-- line 244: koRichTarget249()
-- line 251: koNormalizeModSettings239()
-- line 252: koSetBadEnding239()
-- line 259: koCompleteTurn175()
-- line 268: x0()
-- line 275: x0()
-- line 276: xse()
-- line 283: xse()
-- line 284: S0()
-- line 315: sf()
-- line 316: $le()
-- line 4497: koProfile137()
-- line 4511: koVoiceCompile137()
-- line 4519: koVoiceApply137()
-- line 4528: koSay137()
-- line 4532: koVoiceText137()
-- line 4542: koVoiceResult137()
-- line 4551: koCollector170()
-- line 4554: koCollectorRecord170()
-- line 4566: koHash170()
-- line 4571: koMatchText170()
-- line 4578: koIdleKey170()
-- line 4594: koIdleInfo170()
-- line 4643: koIdleId170()
-- line 4644: koIdleNormalize170()
-- line 4682: koToneText170()
-- line 4692: koValidSaveState175()
-- line 4745: koPrepareImportedState175()
-- line 4762: koDefaultModData293()
-- line 4763: koValidModData293()
-- line 4765: koRecoverModData293()
-- line 4775: koNotifyMod293()
-- line 4776: koReadBundle293()
-- line 4787: koAdoptLegacyAuto293()
-- line 4797: koImportedSettings293()
-- line 4801: koSaveObject294()
-- line 4806: koStorageWarning294()
-- line 4811: koAutoStorage294()
-- line 4816: koMergeSave294()
-- line 4833: koHydrated294()
-- line 4837: koLegacyDaysVisible294()
-- line 4838: koBundleState294()
-- line 4839: koSaveInfo294()
-- line 4847: koSettingsConflict294()
-- line 4855: koSettingsNotice294()
-- line 4859: koHasAutosave175()
-- line 4871: koRichTarget249()
-- line 4872: koRichEligible249()
-- line 4884: koRichEnding249()
-- line 4889: koSetRichEnding249()
-- line 4893: koRichEndingSettings249()
-- line 4915: koNormalizeVisitorTraffic272()
-- line 4922: koVisitorTraffic272()
-- line 4923: koQueueVisitorTraffic272()
-- line 4932: koCancelVisitorTraffic273()
-- line 4937: koActivateVisitorTraffic272()
-- line 4942: koNormalizeModSettings239()
-- line 4955: koGetModSettings239()
-- line 4961: koSaveModSettings239()
-- line 4969: koSetBadEnding239()
-- line 4973: koModBadEndingEnabled239()
-- line 4974: koResetLiveLocks239()
-- line 4976: koNotorietyWarningHistoryReset236()
-- line 4983: koNotorietyEnding235()
-- line 5007: koCompleteTurn175()
-- line 5020: koNamedIdentity175()
-- line 5023: koNamedTemplate175()
-- line 5031: koNamedLine175()
-- line 5037: koNamedThought175()
-- line 5044: Kse()
-- line 5048: koLogReference179()
-- line 5049: koLogInit179()
-- line 5073: koLogResolve179()
-- line 5082: resolve()
-- line 5120: koLogTone179()
-- line 5129: o()
-- line 5129: n()
-- line 5129: sD()
-- line 5137: rD()
-- line 5137: _()
-- line 5137: v()
-- line 5137: S()
-- line 5137: $()
-- line 5137: N()
-- line 5137: E()
-- line 5137: q()
-- line 5137: F()
-- line 5137: W()
-- line 5137: P()
-- line 5137: ae()
-- line 5137: V()
-- line 5137: te()
-- line 5137: vb()
-- line 5145: aD()
-- line 5145: a()
-- line 5145: iD()
-- line 5146: koTail170()
-- line 5157: koText()
-- line 5201: lD()
-- line 5201: t()
-- line 5201: o()
-- line 5201: n()
-- line 5201: s()
-- line 5201: j()
-- line 5201: I()
-- line 5201: M()
-- line 5201: F()
-- line 5201: L()
-- line 5201: V()
-- line 5201: Z()
-- line 5201: hD()
-- line 5209: cD()
-- line 5209: o()
-- line 5209: r()
-- line 5209: a()
-- line 5209: _()
-- line 5209: y()
-- line 5209: w()
-- line 5209: k()
-- line 5209: $()
-- line 5209: j()
-- line 5209: fe()
-- line 5209: Q()
-- line 5210: de()
-- line 5213: Se()
-- line 5213: le()
-- line 5213: Ce()
-- line 5213: be()
-- line 5213: Re()
-- line 5213: et()
-- line 5213: ot()
-- line 5213: $e()
-- line 5213: me()
-- line 5213: Ae()
-- line 5213: Be()
-- line 5213: yt()
-- line 5213: he()
-- line 5213: De()
-- line 5213: tt()
-- line 5213: wt()
-- line 5213: Tt()
-- line 5213: ye()
-- line 5213: J()
-- line 5213: _e()
-- line 5213: re()
-- line 5213: ge()
-- line 5213: oo()
-- line 5213: Zc()
-- line 5213: ed()
-- line 5213: Yl()
-- line 5213: Ls()
-- line 5213: Gl()
-- line 5213: ma()
-- line 5213: Ul()
-- line 5213: F0()
-- line 5213: G0()
-- line 5213: q0()
-- line 5213: U0()
-- line 5213: zl()
-- line 5213: lR()
-- line 5213: cR()
-- line 5213: dR()
-- line 5213: fa()
-- line 5213: z0()
-- line 5213: V0()
-- line 5213: uR()
-- line 5213: K0()
-- line 5213: J0()
-- line 5213: gR()
-- line 5213: wR()
-- line 5213: Jl()
-- line 5213: id()
-- line 5213: kR()
-- line 5213: vR()
-- line 5213: Sp()
-- line 5213: tk()
-- line 5213: Tp()
-- line 5213: Ql()
-- line 5213: xR()
-- line 5213: $p()
-- line 5213: ok()
-- line 5213: ik()
-- line 5213: eh()
-- line 5213: TR()
-- line 5213: lk()
-- line 5213: hd()
-- line 5213: hk()
-- line 5213: $R()
-- line 5213: th()
-- line 5213: oh()
-- line 5213: d()
-- line 5213: IR()
-- line 5213: jR()
-- line 5213: Np()
-- line 5213: Cp()
-- line 5213: ck()
-- line 5213: dk()
-- line 5213: md()
-- line 5213: fd()
-- line 5213: uk()
-- line 5213: mn()
-- line 5213: d()
-- line 5213: WR()
-- line 5213: Pp()
-- line 5213: bk()
-- line 5213: wk()
-- line 5213: ZR()
-- line 5213: eA()
-- line 5213: kk()
-- line 5213: vk()
-- line 5213: oA()
-- line 5213: _d()
-- line 5213: nA()
-- line 5213: Tk()
-- line 5213: $k()
-- line 5213: sA()
-- line 5213: rA()
-- line 5213: aA()
-- line 5213: iA()
-- line 5213: lA()
-- line 5213: lh()
-- line 5213: Ik()
-- line 5213: jk()
-- line 5213: Nk()
-- line 5213: Ck()
-- line 5213: Bp()
-- line 5213: hA()
-- line 5213: Rk()
-- line 5213: gd()
-- line 5213: yd()
-- line 5213: gr()
-- line 5213: Lk()
-- line 5213: Bk()
-- line 5213: Ut()
-- line 5213: Up()
-- line 5213: dh()
-- line 5213: Wk()
-- line 5213: zp()
-- line 5213: uh()
-- line 5213: wd()
-- line 5213: pi()
-- line 5213: Yk()
-- line 5213: Fk()
-- line 5214: kd()
-- line 5214: vd()
-- line 5214: Jp()
-- line 5214: yA()
-- line 5214: Xp()
-- line 5214: yr()
-- line 5214: qk()
-- line 5214: pa()
-- line 5214: fh()
-- line 5214: gi()
-- line 5214: xd()
-- line 5214: br()
-- line 5214: zt()
-- line 5214: Ft()
-- line 5214: bi()
-- line 5214: en()
-- line 5214: Sd()
-- line 5214: Uk()
-- line 5214: zk()
-- line 5214: Td()
-- line 5214: Vk()
-- line 5214: Kk()
-- line 5214: kA()
-- line 5214: kr()
-- line 5214: ya()
-- line 5214: Jk()
-- line 5214: o_()
-- line 5214: n_()
-- line 5214: Qk()
-- line 5214: Xk()
-- line 5214: s_()
-- line 5214: r_()
-- line 5214: Zk()
-- line 5214: Nd()
-- line 5214: ev()
-- line 5214: vi()
-- line 5214: a_()
-- line 5214: ph()
-- line 5214: Cd()
-- line 5214: tv()
-- line 5214: ov()
-- line 5214: d()
-- line 5214: p()
-- line 5214: b()
-- line 5214: x()
-- line 5214: T()
-- line 5214: R()
-- line 5214: Y()
-- line 5214: U()
-- line 5214: ce()
-- line 5214: ve()
-- line 5214: Te()
-- line 5214: ke()
-- line 5214: He()
-- line 5214: Fe()
-- line 5214: Ue()
-- line 5214: ao()
-- line 5214: l_()
-- line 5214: h_()
-- line 5214: c_()
-- line 5214: Ti()
-- line 5214: Cn()
-- line 5214: d_()
-- line 5214: sv()
-- line 5214: qs()
-- line 5214: u_()
-- line 5214: rv()
-- line 5214: Us()
-- line 5214: xr()
-- line 5214: Dd()
-- line 5214: av()
-- line 5214: Ed()
-- line 5214: iv()
-- line 5214: wa()
-- line 5214: m_()
-- line 5214: $i()
-- line 5214: lv()
-- line 5214: f_()
-- line 5214: Md()
-- line 5214: __()
-- line 5214: Oo()
-- line 5214: y_()
-- line 5214: b_()
-- line 5214: w_()
-- line 5214: cs()
-- line 5214: Rn()
-- line 5214: kh()
-- line 5214: k_()
-- line 5214: v_()
-- line 5214: hv()
-- line 5214: cv()
-- line 5214: dv()
-- line 5214: uv()
-- line 5214: mv()
-- line 5214: fv()
-- line 5214: pv()
-- line 5214: _v()
-- line 5214: vh()
-- line 5214: gv()
-- line 5214: Hd()
-- line 5214: Ld()
-- line 5214: yv()
-- line 5214: x_()
-- line 5214: bv()
-- line 5214: wv()
-- line 5214: kv()
-- line 5214: vv()
-- line 5214: S_()
-- line 5214: xv()
-- line 5214: Sv()
-- line 5214: Tv()
-- line 5214: SA()
-- line 5214: $v()
-- line 5214: TA()
-- line 5214: $A()
-- line 5214: Iv()
-- line 5214: jv()
-- line 5214: Nv()
-- line 5214: Gn()
-- line 5214: T_()
-- line 5214: Cv()
-- line 5214: Rv()
-- line 5214: Av()
-- line 5214: $_()
-- line 5214: Ii()
-- line 5216: I_()
-- line 5216: j_()
-- line 5216: Dv()
-- line 5216: Ev()
-- line 5216: Mv()
-- line 5216: Pv()
-- line 5216: Ov()
-- line 5216: qo()
-- line 5216: Hv()
-- line 5216: Lv()
-- line 5216: Bv()
-- line 5216: Wv()
-- line 5216: Yv()
-- line 5216: N_()
-- line 5216: Fv()
-- line 5216: C_()
-- line 5216: Gv()
-- line 5216: qv()
-- line 5216: A_()
-- line 5216: Uv()
-- line 5216: D_()
-- line 5216: Yd()
-- line 5216: AA()
-- line 5216: zv()
-- line 5216: E_()
-- line 5216: Vv()
-- line 5216: Fd()
-- line 5216: zs()
-- line 5216: DA()
-- line 5216: xh()
-- line 5216: Ho()
-- line 5216: EA()
-- line 5216: MA()
-- line 5216: ji()
-- line 5216: P_()
-- line 5216: OA()
-- line 5216: Sh()
-- line 5216: qd()
-- line 5216: O_()
-- line 5216: Zv()
-- line 5216: ex()
-- line 5216: tx()
-- line 5216: H_()
-- line 5216: L_()
-- line 5216: Sr()
-- line 5216: ox()
-- line 5216: nx()
-- line 5216: Un()
-- line 5216: sx()
-- line 5216: ds()
-- line 5216: HA()
-- line 5216: rx()
-- line 5216: ax()
-- line 5216: ix()
-- line 5216: lx()
-- line 5216: Uo()
-- line 5216: Ir()
-- line 5216: zn()
-- line 5216: nn()
-- line 5216: hx()
-- line 5216: q_()
-- line 5216: U_()
-- line 5216: BA()
-- line 5216: jr()
-- line 5216: cx()
-- line 5216: z_()
-- line 5216: xa()
-- line 5216: V_()
-- line 5216: Sa()
-- line 5216: dx()
-- line 5216: ux()
-- line 5216: K_()
-- line 5216: Zd()
-- line 5216: WA()
-- line 5216: YA()
-- line 5216: mx()
-- line 5216: fx()
-- line 5216: Ta()
-- line 5216: FA()
-- line 5216: Ri()
-- line 5216: px()
-- line 5216: no()
-- line 5216: GA()
-- line 5216: _x()
-- line 5216: qA()
-- line 5216: UA()
-- line 5216: yx()
-- line 5216: zA()
-- line 5216: Dn()
-- line 5216: J_()
-- line 5216: VA()
-- line 5216: Nr()
-- line 5216: eu()
-- line 5216: $a()
-- line 5216: tu()
-- line 5216: Q_()
-- line 5216: X_()
-- line 5216: KA()
-- line 5216: Z_()
-- line 5216: JA()
-- line 5216: bx()
-- line 5216: wx()
-- line 5216: ou()
-- line 5216: nu()
-- line 5216: kx()
-- line 5216: eg()
-- line 5216: QA()
-- line 5216: tg()
-- line 5216: su()
-- line 5216: og()
-- line 5216: ru()
-- line 5216: xx()
-- line 5216: XA()
-- line 5216: au()
-- line 5216: s2()
-- line 5216: e()
-- line 5216: dD()
-- line 5216: pD()
-- line 5216: gD()
-- line 5216: wD()
-- line 5216: qa()
-- line 5216: vD()
-- line 5216: xD()
-- line 5216: SD()
-- line 5216: TD()
-- line 5216: rm()
-- line 5216: r2()
-- line 5216: a2()
-- line 5216: $D()
+- line 48: o()
+- line 48: n()
+- line 48: kre()
+- line 56: vre()
+- line 56: p()
+- line 56: k()
+- line 56: x()
+- line 56: S()
+- line 56: L()
+- line 56: P()
+- line 56: z()
+- line 56: O()
+- line 56: W()
+- line 56: R()
+- line 56: q()
+- line 56: H()
+- line 56: oe()
+- line 56: Y5()
+- line 64: xre()
+- line 64: a()
+- line 64: Sre()
+- line 72: Tre()
+- line 72: t()
+- line 72: o()
+- line 72: n()
+- line 72: s()
+- line 72: I()
+- line 72: $()
+- line 72: A()
+- line 72: O()
+- line 72: ne()
+- line 72: H()
+- line 72: ie()
+- line 72: Ire()
+- line 80: $re()
+- line 80: o()
+- line 80: r()
+- line 80: a()
+- line 80: p()
+- line 80: g()
+- line 80: y()
+- line 80: b()
+- line 80: S()
+- line 80: I()
+- line 80: se()
+- line 80: Y()
+- line 81: he()
+- line 84: ee()
+- line 84: X()
+- line 84: ce()
+- line 84: de()
+- line 84: ke()
+- line 84: Ve()
+- line 84: De()
+- line 84: ye()
+- line 84: Te()
+- line 84: Fe()
+- line 84: dt()
+- line 84: it()
+- line 84: ve()
+- line 84: At()
+- line 84: Ft()
+- line 84: Ie()
+- line 84: tt()
+- line 84: xt()
+- line 84: Kt()
+- line 84: Bt()
+- line 84: wo()
+- line 84: $e()
+- line 84: st()
+- line 84: Pt()
+- line 84: Lt()
+- line 84: Wn()
+- line 84: ul()
+- line 84: fl()
+- line 84: Xe()
+- line 84: Yo()
+- line 84: ma()
+- line 84: Oh()
+- line 84: uf()
+- line 84: mf()
+- line 84: ff()
+- line 84: Tne()
+- line 84: $ne()
+- line 84: Nne()
+- line 84: Ph()
+- line 84: mM()
+- line 84: fM()
+- line 84: Ane()
+- line 84: pM()
+- line 84: gM()
+- line 84: Dne()
+- line 84: Pne()
+- line 84: _f()
+- line 84: Ey()
+- line 84: Hne()
+- line 84: Lne()
+- line 84: d1()
+- line 84: kM()
+- line 84: u1()
+- line 84: yf()
+- line 84: Yne()
+- line 84: m1()
+- line 84: vM()
+- line 84: $M()
+- line 84: kf()
+- line 84: Bne()
+- line 84: NM()
+- line 84: Cy()
+- line 84: AM()
+- line 84: Fne()
+- line 84: vf()
+- line 84: xf()
+- line 84: f()
+- line 84: Gne()
+- line 84: Une()
+- line 84: g1()
+- line 84: _1()
+- line 84: jM()
+- line 84: EM()
+- line 84: Py()
+- line 84: Hy()
+- line 84: RM()
+- line 84: Bs()
+- line 84: f()
+- line 84: sse()
+- line 84: x1()
+- line 84: LM()
+- line 84: YM()
+- line 84: gse()
+- line 84: _se()
+- line 84: WM()
+- line 84: BM()
+- line 84: wse()
+- line 84: Yy()
+- line 84: bse()
+- line 84: UM()
+- line 84: qM()
+- line 84: kse()
+- line 84: vse()
+- line 84: xse()
+- line 84: Sse()
+- line 84: Tse()
+- line 84: Af()
+- line 84: VM()
+- line 84: KM()
+- line 84: zM()
+- line 84: JM()
+- line 84: $1()
+- line 84: Ise()
+- line 84: QM()
+- line 84: Wy()
+- line 84: By()
+- line 84: kl()
+- line 84: r3()
+- line 84: a3()
+- line 84: No()
+- line 84: C1()
+- line 84: Rf()
+- line 84: i3()
+- line 84: D1()
+- line 84: Cf()
+- line 84: Gy()
+- line 84: Ld()
+- line 84: l3()
+- line 84: h3()
+- line 85: Uy()
+- line 85: qy()
+- line 85: P1()
+- line 85: Mse()
+- line 85: L1()
+- line 85: vl()
+- line 85: d3()
+- line 85: Hh()
+- line 85: Mf()
+- line 85: Wd()
+- line 85: Vy()
+- line 85: xl()
+- line 85: Ao()
+- line 85: $o()
+- line 85: Fd()
+- line 85: xs()
+- line 85: Ky()
+- line 85: u3()
+- line 85: m3()
+- line 85: zy()
+- line 85: f3()
+- line 85: p3()
+- line 85: Hse()
+- line 85: Tl()
+- line 85: Wh()
+- line 85: g3()
+- line 85: F1()
+- line 85: G1()
+- line 85: _3()
+- line 85: y3()
+- line 85: U1()
+- line 85: q1()
+- line 85: w3()
+- line 85: Zy()
+- line 85: b3()
+- line 85: qd()
+- line 85: V1()
+- line 85: Of()
+- line 85: ew()
+- line 85: k3()
+- line 85: v3()
+- line 85: f()
+- line 85: w()
+- line 85: v()
+- line 85: T()
+- line 85: N()
+- line 85: M()
+- line 85: K()
+- line 85: te()
+- line 85: pe()
+- line 85: je()
+- line 85: Ce()
+- line 85: Ne()
+- line 85: Ke()
+- line 85: Ze()
+- line 85: ot()
+- line 85: zo()
+- line 85: z1()
+- line 85: J1()
+- line 85: Q1()
+- line 85: zd()
+- line 85: dr()
+- line 85: X1()
+- line 85: S3()
+- line 85: ci()
+- line 85: Z1()
+- line 85: T3()
+- line 85: di()
+- line 85: $l()
+- line 85: nw()
+- line 85: I3()
+- line 85: sw()
+- line 85: $3()
+- line 85: Fh()
+- line 85: eT()
+- line 85: Jd()
+- line 85: N3()
+- line 85: tT()
+- line 85: rw()
+- line 85: nT()
+- line 85: Fn()
+- line 85: rT()
+- line 85: aT()
+- line 85: iT()
+- line 85: _a()
+- line 85: ur()
+- line 85: Bf()
+- line 85: lT()
+- line 85: hT()
+- line 85: A3()
+- line 85: j3()
+- line 85: E3()
+- line 85: R3()
+- line 85: C3()
+- line 85: D3()
+- line 85: M3()
+- line 85: O3()
+- line 85: Ff()
+- line 85: P3()
+- line 85: lw()
+- line 85: hw()
+- line 85: H3()
+- line 85: cT()
+- line 85: L3()
+- line 85: Y3()
+- line 85: W3()
+- line 85: B3()
+- line 85: dT()
+- line 85: F3()
+- line 85: G3()
+- line 85: U3()
+- line 85: Wse()
+- line 85: q3()
+- line 85: Bse()
+- line 85: Fse()
+- line 85: V3()
+- line 85: K3()
+- line 85: z3()
+- line 85: Er()
+- line 85: uT()
+- line 85: J3()
+- line 85: Q3()
+- line 85: X3()
+- line 85: mT()
+- line 85: Qd()
+- line 87: fT()
+- line 87: pT()
+- line 87: Z3()
+- line 87: eO()
+- line 87: tO()
+- line 87: oO()
+- line 87: nO()
+- line 87: ts()
+- line 87: sO()
+- line 87: rO()
+- line 87: aO()
+- line 87: iO()
+- line 87: lO()
+- line 87: gT()
+- line 87: hO()
+- line 87: _T()
+- line 87: cO()
+- line 87: dO()
+- line 87: wT()
+- line 87: uO()
+- line 87: bT()
+- line 87: uw()
+- line 87: zse()
+- line 87: mO()
+- line 87: kT()
+- line 87: fO()
+- line 87: mw()
+- line 87: ui()
+- line 87: Jse()
+- line 87: Gf()
+- line 87: Gn()
+- line 87: Qse()
+- line 87: Xse()
+- line 87: Xd()
+- line 87: xT()
+- line 87: ere()
+- line 87: Uf()
+- line 87: pw()
+- line 87: ST()
+- line 87: wO()
+- line 87: bO()
+- line 87: kO()
+- line 87: TT()
+- line 87: IT()
+- line 87: Nl()
+- line 87: vO()
+- line 87: xO()
+- line 87: Cr()
+- line 87: SO()
+- line 87: ya()
+- line 87: tre()
+- line 87: TO()
+- line 87: IO()
+- line 87: $O()
+- line 87: NO()
+- line 87: os()
+- line 87: El()
+- line 87: Dr()
+- line 87: Is()
+- line 87: AO()
+- line 87: RT()
+- line 87: CT()
+- line 87: nre()
+- line 87: Rl()
+- line 87: jO()
+- line 87: DT()
+- line 87: qh()
+- line 87: MT()
+- line 87: Vh()
+- line 87: EO()
+- line 87: RO()
+- line 87: OT()
+- line 87: xw()
+- line 87: sre()
+- line 87: rre()
+- line 87: CO()
+- line 87: DO()
+- line 87: Kh()
+- line 87: are()
+- line 87: tu()
+- line 87: MO()
+- line 87: Vo()
+- line 87: ire()
+- line 87: OO()
+- line 87: lre()
+- line 87: hre()
+- line 87: HO()
+- line 87: cre()
+- line 87: fr()
+- line 87: PT()
+- line 87: dre()
+- line 87: Cl()
+- line 87: Sw()
+- line 87: zh()
+- line 87: Tw()
+- line 87: HT()
+- line 87: LT()
+- line 87: ure()
+- line 87: YT()
+- line 87: mre()
+- line 87: LO()
+- line 87: YO()
+- line 87: Iw()
+- line 87: $w()
+- line 87: WO()
+- line 87: WT()
+- line 87: fre()
+- line 87: BT()
+- line 87: Nw()
+- line 87: FT()
+- line 87: Aw()
+- line 87: FO()
+- line 87: pre()
+- line 87: jw()
+- line 87: d8()
+- line 87: e()
+- line 87: Nre()
+- line 87: Rre()
+- line 87: u8()
+- line 87: Im()
+- line 87: Ore()
+- line 87: Mi()
+- line 87: Hre()
+- line 87: Lre()
+- line 87: Yre()
+- line 87: Wre()
+- line 87: Bre()
+- line 87: Fre()
+- line 87: B5()
+- line 87: f8()
+- line 87: Gre()
+- line 87: Ure()
+- line 87: oP()
+- line 87: g8()
+- line 87: Dw()
+- line 87: Kre()
+- line 87: Jre()
+- line 87: tae()
+- line 87: oae()
+- line 87: nae()
+- line 87: sae()
+- line 87: rae()
+- line 87: aae()
+- line 87: iae()
+- line 87: lae()
+- line 87: _8()
+- line 87: hae()
+- line 87: sP()
+- line 87: cae()
+- line 87: dae()
+- line 87: JT()
+- line 87: q5()
+- line 87: V5()
+- line 87: QT()
+- line 87: $m()
+- line 87: w8()
+- line 87: K5()
+- line 89: b8()
+- line 89: qi()
+- line 89: Yu()
+- line 89: r_()
+- line 89: sie()
+- line 89: dv()
+- line 89: U()
+- line 89: uv()
+- line 89: x8()
+- line 89: rd()
+- line 89: Be()
+- line 89: Ha()
+- line 89: xo()
+- line 89: S8()
+- line 89: aie()
+- line 89: xn()
+- line 89: T8()
+- line 89: iie()
+- line 89: an()
+- line 89: z5()
+- line 89: ds()
+- line 89: lie()
+- line 89: hie()
+- line 89: cie()
+- line 89: Ot()
+- line 89: fie()
+- line 89: a_()
+- line 89: J5()
+- line 89: Nm()
+- line 89: mv()
+- line 89: fv()
+- line 89: Am()
+- line 89: Y$()
+- line 89: pie()
+- line 89: $8()
+- line 89: en()
+- line 89: dn()
+- line 89: pv()
+- line 89: A8()
+- line 89: Ni()
+- line 89: La()
+- line 89: yie()
+- line 89: sh()
+- line 89: j8()
+- line 89: nr()
+- line 89: wie()
+- line 89: bie()
+- line 89: E8()
+- line 89: dk()
+- line 89: Q5()
+- line 89: rh()
+- line 89: R8()
 
 ### function-name families
-- o: 10
-- n: 10
-- J: 10
-- x: 9
-- v: 9
-- N: 9
-- F: 9
-- G: 9
+- x: 10
+- r: 10
+- f: 10
+- M: 10
+- S: 9
+- z: 9
 - R: 9
-- B: 9
-- E: 8
-- q: 8
+- m: 9
+- _: 9
+- C: 9
+- l: 9
+- o: 8
+- n: 8
+- L: 8
 - P: 8
+- H: 8
 - t: 8
-- w: 8
-- U: 8
+- s: 8
+- $: 8
+- g: 8
+- X: 8
+- d: 8
+- u: 8
+- h: 8
+- F: 8
 - K: 8
-- T: 8
-- W: 7
+- J: 8
+- Q: 8
+- j: 8
+- B: 8
+- e: 8
+- c: 8
+- p: 7
+- O: 7
+- q: 7
 - a: 7
-- s: 7
-- j: 7
-- M: 7
-- L: 7
-- r: 7
-- Q: 7
-- d: 7
-- b: 7
-- Y: 7
-- h: 7
-- c: 7
-- m: 7
-- X: 7
-- S: 6
-- _: 6
-- $: 6
-- V: 6
+- U: 7
+- w: 7
+- V: 7
+- v: 7
+- T: 7
+- Z: 7
+- E: 7
 - k: 6
-- e: 6
-- H: 6
+- W: 6
+- Y: 6
+- I: 6
+- b: 6
 - i: 6
-- f: 6
-- C: 6
-- A: 6
-- Z: 5
-- z: 5
-- p: 5
-- O: 5
-- l: 5
-- D: 5
-- y: 4
-- g: 4
-- u: 4
-- koHasAutosave: 3
-- xse: 3
-- I: 3
-- koValidSaveState: 2
-- koRichTarget: 2
-- koNormalizeModSettings: 2
-- koSetBadEnding: 2
-- koCompleteTurn: 2
-- sf: 2
-- $le: 2
-- koProfile: 2
-- Kse: 2
-- koVoiceCompile: 1
-- koVoiceApply: 1
-- koSay: 1
-- koVoiceText: 1
-- koVoiceResult: 1
-- koCollector: 1
-- koCollectorRecord: 1
-- koHash: 1
-- koMatchText: 1
-- koIdleKey: 1
-- koIdleInfo: 1
-- koIdleId: 1
-- koIdleNormalize: 1
-- koToneText: 1
-- koPrepareImportedState: 1
-- koDefaultModData: 1
-- koValidModData: 1
-- koRecoverModData: 1
-- koNotifyMod: 1
-- koReadBundle: 1
-- koAdoptLegacyAuto: 1
-- koImportedSettings: 1
-- koSaveObject: 1
-- koStorageWarning: 1
-- koAutoStorage: 1
-- koMergeSave: 1
-- koHydrated: 1
-- koLegacyDaysVisible: 1
-- koBundleState: 1
-- koSaveInfo: 1
-- koSettingsConflict: 1
-- koSettingsNotice: 1
-- koRichEligible: 1
-- koRichEnding: 1
-- koSetRichEnding: 1
-- koRichEndingSettings: 1
-- koNormalizeVisitorTraffic: 1
-- koVisitorTraffic: 1
-- koQueueVisitorTraffic: 1
-- koCancelVisitorTraffic: 1
-- koActivateVisitorTraffic: 1
-- koGetModSettings: 1
-- koSaveModSettings: 1
-- koModBadEndingEnabled: 1
-- koResetLiveLocks: 1
-- koNotorietyWarningHistoryReset: 1
-- koNotorietyEnding: 1
-- koNamedIdentity: 1
-- koNamedTemplate: 1
-- koNamedLine: 1
-- koNamedThought: 1
-- koLogReference: 1
-- koLogInit: 1
-- koLogResolve: 1
-- resolve: 1
+- D: 6
+- G: 6
+- A: 5
+- y: 5
+- N: 5
+- kre: 1
+- vre: 1
+- oe: 1
+- xre: 1
+- Sre: 1
+- Tre: 1
+- ne: 1
+- ie: 1
+- Ire: 1
+- $re: 1
+- se: 1
+- he: 1
+- ee: 1
+- ce: 1
+- de: 1
+- ke: 1
+- Ve: 1
+- De: 1
+- ye: 1
+- Te: 1
+- Fe: 1
+- dt: 1
+- it: 1
+- ve: 1
+- At: 1
+- Ft: 1
+- Ie: 1
+- tt: 1
+- xt: 1
+- Kt: 1
+- Bt: 1
+- wo: 1
+- $e: 1
+- st: 1
+- Pt: 1
+- Lt: 1
+- Wn: 1
+- ul: 1
+- fl: 1
+- Xe: 1
+- Yo: 1
+- ma: 1
+- Oh: 1
+- uf: 1
+- mf: 1
+- ff: 1
+- Tne: 1
+- $ne: 1
+- Nne: 1
+- Ph: 1
+- mM: 1
+- fM: 1
+- Ane: 1
+- pM: 1
+- gM: 1
+- Dne: 1
+- Pne: 1
+- _f: 1
+- Ey: 1
+- Hne: 1
+- Lne: 1
+- kM: 1
+- yf: 1
+- Yne: 1
+- vM: 1
+- $M: 1

@@ -1,1 +1,3 @@
-function K5({onClose:e,markSeenOnClose:t}
+function K5(e){const t=`${e.imageBase}
+${e.imageNegative??""}
+${e.imageCheckpoint??""}`;let o=2166136261;for(let n=0;n<t.length;n++)o^=t.charCodeAt(n),o=Math.imul(o,16777619)>>>0;return o.toString(36)}

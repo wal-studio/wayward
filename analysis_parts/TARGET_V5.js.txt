@@ -1,1 +1,1 @@
-function V5({label:e,title:t,onClick:o,disabled:n}
+function V5(e,t="spouse"){return t==="spouse"?e.tagline:e.taglineNotWife??e.tagline}

@@ -1,1 +1,1 @@
-function z5({variant:e}
+function z5(e,t){var o,n,s,r;return((n=(o=e.activeScene)==null?void 0:o.patron)==null?void 0:n.customerId)===t||!!((r=(s=e.activeScene)==null?void 0:s.table)!=null&&r.players.includes(t))}

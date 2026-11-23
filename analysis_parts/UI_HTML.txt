@@ -1,1 +1,5 @@
 <div id="root"></div>
+    <noscript>
+      <p>Wayward needs JavaScript to run. About the game, the download and the
+        content notice: <a href="https://sintention.com/">sintention.com</a>.</p>
+    </noscript>
