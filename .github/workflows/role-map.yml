@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - "*.html"
-      - "tools/build_role_map.py"
   workflow_dispatch:
     inputs:
       source_html:
