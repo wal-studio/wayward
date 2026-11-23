@@ -25,3 +25,8 @@ Separate source review, unit/integration tests, build, CI, artifact upload/downl
 
 ## Ownership
 Do not modify another team's repository or product area merely to resolve an integration issue. Verify contracts and compatibility, then hand off the exact evidence. Never transfer routine log polling, CI inspection, artifact retrieval, or available repository checks to the user.
+
+<!-- GLOBAL-DEVELOPMENT-BASELINE:START -->
+
+본 저장소의 공통 기준점·브랜치 전파 규정은 [GLOBAL_DEVELOPMENT_BASELINE.md](GLOBAL_DEVELOPMENT_BASELINE.md)를 따른다. 신규 브랜치 생성 전 이 문서를 반드시 복사하고, 기존 브랜치 누락 여부를 확인한다.
+<!-- GLOBAL-DEVELOPMENT-BASELINE:END -->
