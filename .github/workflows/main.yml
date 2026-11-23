@@ -16,13 +16,6 @@ on:
         required: false
         type: boolean
         default: false
-    inputs:
-      apply_mobile_patch:
-        description: 'Apply the guarded mobile UI patch to this explicitly selected branch'
-        required: false
-        type: boolean
-        default: false
-
 concurrency:
   group: wayward-mobile-redesign-${{ github.ref }}
   cancel-in-progress: false
