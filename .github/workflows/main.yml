@@ -11,6 +11,11 @@ on:
         required: false
         type: string
         default: ''
+      include_legacy_mobile_targets:
+        description: 'Generate historical minified-symbol target contexts only when explicitly requested'
+        required: false
+        type: boolean
+        default: false
       apply_mobile_patch:
         description: 'Apply the guarded mobile UI patch to this explicitly selected branch'
         required: false
@@ -25,6 +30,7 @@ permissions:
 
 jobs:
   split:
+    if: github.event_name == 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
 
     steps:
@@ -417,6 +423,7 @@ jobs:
 
 
       - name: Extract mobile redesign targets
+        if: github.event_name == 'workflow_dispatch' && inputs.include_legacy_mobile_targets == true
         shell: bash
         run: |
           set -euo pipefail
@@ -473,6 +480,7 @@ jobs:
 
 
       - name: Extract mobile redesign target functions
+        if: github.event_name == 'workflow_dispatch' && inputs.include_legacy_mobile_targets == true
         shell: bash
         run: |
           set -euo pipefail
@@ -598,6 +606,7 @@ jobs:
           PY
 
       - name: Generate compact mobile patch contexts
+        if: github.event_name == 'workflow_dispatch' && inputs.include_legacy_mobile_targets == true
         shell: bash
         run: |
           set -euo pipefail
@@ -753,6 +762,7 @@ jobs:
           PY
 
       - name: Generate compact interaction owner index
+        if: github.event_name == 'workflow_dispatch' && inputs.include_legacy_mobile_targets == true
         shell: bash
         run: |
           set -euo pipefail
@@ -813,6 +823,7 @@ jobs:
           PY
 
       - name: Generate focused portrait and movement contexts
+        if: github.event_name == 'workflow_dispatch' && inputs.include_legacy_mobile_targets == true
         shell: bash
         run: |
           set -euo pipefail
@@ -893,6 +904,7 @@ jobs:
           PY
 
       - name: Generate destructured mobile component contexts
+        if: github.event_name == 'workflow_dispatch' && inputs.include_legacy_mobile_targets == true
         shell: bash
         run: |
           set -euo pipefail
@@ -994,6 +1006,7 @@ jobs:
           PY
 
       - name: Generate exact mobile surface owner contexts
+        if: github.event_name == 'workflow_dispatch' && inputs.include_legacy_mobile_targets == true
         shell: bash
         run: |
           set -euo pipefail
