@@ -92,7 +92,7 @@ jobs:
           lines = raw.splitlines()
           total_lines = len(lines)
 
-          for p in out.glob(f"{src.stem}.part*.txt"):
+          for p in out.glob("*.part*.txt"):
               p.unlink()
 
           chunk_chars = 80_000
