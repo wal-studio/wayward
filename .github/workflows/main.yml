@@ -2,7 +2,6 @@ name: Split Wayward HTML for analysis
 
 on:
   push:
-    branches: [main]
     paths:
       - "*.html"
   workflow_dispatch:
@@ -77,12 +76,13 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import hashlib
           import json
           import re
           from collections import Counter
 
-          src = Path("Wayward_MOD_v2.107.html")
+          src = Path(os.environ["WAYWARD_SOURCE_HTML"])
           out = Path("analysis_parts")
           out.mkdir(exist_ok=True)
 
@@ -93,7 +93,7 @@ jobs:
           lines = raw.splitlines()
           total_lines = len(lines)
 
-          for p in out.glob("Wayward_MOD_v2.107.part*.txt"):
+          for p in out.glob(f"{src.stem}.part*.txt"):
               p.unlink()
 
           chunk_chars = 80_000
@@ -101,7 +101,7 @@ jobs:
           for offset in range(0, total_chars, chunk_chars):
               chunk = raw[offset:offset + chunk_chars]
               idx = len(parts) + 1
-              name = f"Wayward_MOD_v2.107.part{idx:03d}.txt"
+              name = f"{src.stem}.part{idx:03d}.txt"
               (out / name).write_text(chunk, encoding="utf-8")
               parts.append({
                   "name": name,
@@ -267,7 +267,7 @@ jobs:
           (out / "MANIFEST.txt").write_text("\n".join(manifest_txt) + "\n", encoding="utf-8")
 
           report = [
-              "# Wayward_MOD_v2.107 전체 소스 구조 분석",
+              f"# {src.stem} 전체 소스 구조 분석",
               "",
               "## 원본",
               f"- SHA-256: {sha256}",
@@ -325,10 +325,11 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
           from collections import Counter
 
-          src=Path("Wayward_MOD_v2.107.html")
+          src=Path(os.environ["WAYWARD_SOURCE_HTML"])
           out=Path("analysis_parts")
           raw=src.read_text(encoding="utf-8")
 
@@ -419,8 +420,9 @@ jobs:
           mkdir -p analysis_parts/mobile_targets
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
-          raw=Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw=Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out=Path("analysis_parts/mobile_targets")
           targets=["nce","Ihe","vle","zse","The","She","whe"]
           for name in targets:
@@ -473,9 +475,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re, json
 
-          src = Path("Wayward_MOD_v2.107.html")
+          src = Path(os.environ["WAYWARD_SOURCE_HTML"])
           out = Path("analysis_parts")
           raw = src.read_text(encoding="utf-8")
 
@@ -597,9 +600,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
 
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
@@ -689,11 +693,12 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
           import subprocess
           import tempfile
 
-          src = Path("Wayward_MOD_v2.107.html")
+          src = Path(os.environ["WAYWARD_SOURCE_HTML"])
           raw = src.read_text(encoding="utf-8")
           marker = '<style data-mobile-redesign="v1-debug-toggle">'
           added = False
@@ -750,8 +755,9 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
 
           def function_range(name):
@@ -809,9 +815,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
 
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
@@ -888,9 +895,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
 
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
@@ -988,8 +996,9 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
-          raw = Path("Wayward_MOD_v2.107.html").read_text(encoding="utf-8")
+          raw = Path(os.environ["WAYWARD_SOURCE_HTML"]).read_text(encoding="utf-8")
           out = Path("analysis_parts/mobile_targets")
           out.mkdir(parents=True, exist_ok=True)
 
@@ -1020,7 +1029,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add analysis_parts/ Wayward_MOD_v2.107.html
+          git add analysis_parts/ "$WAYWARD_SOURCE_HTML"
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0
