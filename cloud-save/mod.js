@@ -1092,7 +1092,9 @@ WML.define({
         const time = state.time && typeof state.time === 'object' ? state.time : {};
         const player = state.player && typeof state.player === 'object' ? state.player : {};
         const scene = state.scene && typeof state.scene === 'object' ? state.scene : {};
-        display.day = time.day == null ? '' : String(time.day);
+        display.day = time.day == null
+          ? (tutor && tutor.day != null ? String(tutor.day) : '')
+          : String(time.day);
         display.minute = time.minute == null ? '' : String(time.minute);
         display.name = player.name == null ? '' : String(player.name);
         display.money = player.money == null ? '' : String(player.money);
