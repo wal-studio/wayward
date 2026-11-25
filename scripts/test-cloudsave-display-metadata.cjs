@@ -46,7 +46,7 @@ const properties = context.__display.buildDriveDisplayProperties({
 });
 assert.equal(properties.wmlDisplayVersion, '3');
 assert.equal(properties.wmlSummary, undefined);
-assert.equal(properties.wmlNativeSavedAt, undefined);
+assert.equal(properties.wmlNativeSavedAt, '2026-11-25T15:26:00.000Z');
 assert.equal(properties.wmlMemoPreview, '첫 줄');
 assert.equal(properties.wmlHasMemo, '1');
 assert.doesNotMatch(JSON.stringify(properties), /재화|관계|상태|prep|골드|마라/);
