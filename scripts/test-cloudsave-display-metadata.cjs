@@ -67,6 +67,7 @@ const overtime = context.__summary.nativeSaveDisplay({
 assert.match(overtime.summary, /피파/);
 assert.match(overtime.summary, /일 14/);
 assert.match(overtime.summary, /재화 123/);
+assert.match(overtime.summary, /상태: service/);
 assert.doesNotMatch(overtime.summary, /만원|주째|집회 중|플레이 1시간/);
 
 const empty = context.__summary.nativeSaveDisplay({ state: {}, modData: {} });
