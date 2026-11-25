@@ -335,7 +335,7 @@ WML.define({
         }
         timeout = setTimeout(() => finishError(new Error(
           'Google 로그인이 시간 초과되었습니다. 연결 버튼을 눌러 다시 시도하세요.'
-        )), 120000);
+        )), 195000);
         closeWatch = setInterval(() => {
           if (bridge && bridge.closed) {
             finishError(new Error('Google 인증 창이 닫혔습니다. [구글 계정으로 연결]을 눌러 다시 시도하세요.'));
