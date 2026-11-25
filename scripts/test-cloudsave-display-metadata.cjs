@@ -185,6 +185,25 @@ assert.match(source, /await writeSlotDisplayMetadata\(slot, snapshot\)/);
 assert.match(source, /wmlMemoPreview/);
 assert.match(source, /wmlNativeProfile/);
 assert.match(source, /wmlNativeSavedAt/);
+
+const formatStart = source.indexOf('    function formatSlotMetadata(file) {');
+const formatEnd = source.indexOf('    function showMemoPopup(memo) {', formatStart);
+assert.ok(formatStart >= 0 && formatEnd > formatStart, 'native slot metadata formatter must exist');
+const formatContext = vm.createContext({});
+vm.runInContext(source.slice(formatStart, formatEnd) + '\nthis.formatSlotMetadata = formatSlotMetadata;', formatContext);
+const savedAt = '2026-11-26T01:00:00.000Z';
+const overtimeMeta = formatContext.formatSlotMetadata({
+  modifiedTime: '2026-11-25T00:00:00.000Z',
+  appProperties: { wmlNativeProfile: 'overtime', wmlNativeSavedAt: savedAt }
+});
+assert.match(overtimeMeta, /Nov|26|11月/, 'Overtime must use its native short-month timestamp format');
+const bluebloodMeta = formatContext.formatSlotMetadata({
+  modifiedTime: '2026-11-25T00:00:00.000Z',
+  appProperties: { wmlNativeProfile: 'blueblood', wmlNativeSavedAt: savedAt, wmlNativeCheated: '1' }
+});
+assert.match(bluebloodMeta, /2026/, 'Blueblood must use its native full locale timestamp');
+assert.match(bluebloodMeta, /치트/, 'Blueblood native cheat marker must be retained');
+
 assert.match(source, /wmlHasMemo/);
 assert.doesNotMatch(source, /hina|히나/,
   'summary extraction must not hardcode a specific character or mod');
