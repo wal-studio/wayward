@@ -90,7 +90,7 @@ const summaryFormatStart = source.indexOf('    function formatSlotSummary(file) 
 const summaryFormatEnd = source.indexOf('    function formatSlotMetadata(file) {', summaryFormatStart);
 assert.ok(summaryFormatStart >= 0 && summaryFormatEnd > summaryFormatStart);
 const summaryFormatContext = vm.createContext({});
-vm.runInContext(source.slice(summaryFormatStart, summaryFormatEnd) + '\\nthis.formatSlotSummary = formatSlotSummary;', summaryFormatContext);
+vm.runInContext(source.slice(summaryFormatStart, summaryFormatEnd) + '\nthis.formatSlotSummary = formatSlotSummary;', summaryFormatContext);
 assert.equal(summaryFormatContext.formatSlotSummary({
   appProperties: {
     wmlNativeProfile: 'blueblood',
