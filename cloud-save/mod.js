@@ -840,7 +840,7 @@ WML.define({
       const roots = { state, modData: snapshot && snapshot.modData || {} };
       const day = firstValue(roots, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
       const gold = firstValue(roots, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
-      const role = firstValue(roots, [/^(role|occupation|job|origin|background|statusName|className|socialClass|characterRole|profession|identity)$/i]);
+      const role = firstValue(roots, [/^(role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i]);
       const character = activeCharacterName(snapshot);
       const parts = [];
       if (character && day !== '') parts.push(String(character) + ' 진행일: ' + String(day));
