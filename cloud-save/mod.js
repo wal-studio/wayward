@@ -738,124 +738,13 @@ WML.define({
         memo: '',
         title: defaultTitle(stateToSave),
         state: stateToSave,
-        modData
+        modData,
+        ...(native && typeof native === 'object' && !Array.isArray(native)
+          ? { nativeSave: native }
+          : {})
       };
     }
 
-    function firstValue(root, patterns) {
-      const seen = new Set(), queue = [{ value: root, depth: 0 }];
-      while (queue.length) {
-        const item = queue.shift();
-        if (!item.value || typeof item.value !== 'object' || seen.has(item.value) || item.depth > 5) continue;
-        seen.add(item.value);
-        for (const [key, value] of Object.entries(item.value)) if (patterns.some(pattern => pattern.test(key)) && (typeof value === 'string' || typeof value === 'number') && String(value).trim()) return value;
-        for (const value of Object.values(item.value)) if (value && typeof value === 'object') queue.push({ value, depth: item.depth + 1 });
-      }
-      return '';
-    }
-    function activeCharacterName(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const characters = state.characters;
-      const primaryId = state.primaryCharacterId;
-      let active = characters ? characters[String(primaryId == null ? 'wife' : primaryId)] : null;
-      if (!active && characters && typeof characters === 'object') {
-        active = Object.values(characters).find(value => value && typeof value === 'object' &&
-          (value.isPrimary === true || value.isMain === true || value.primary === true)) || null;
-      }
-      for (const candidate of [active, state.player, state.character, state.wife]) {
-        const name = firstValue(candidate, [/^(name|displayName|characterName|playerName|wifeName|girlName)$/i]);
-        if (name !== '') return name;
-      }
-      return firstValue({
-        state,
-        modData: snapshot && snapshot.modData || {}
-      }, [/^(characterName|playerName|protagonistName|heroName|mainCharacterName|girlName|wifeName)$/i]);
-    }
-
-    function collectSummaryExtras(snapshot) {
-      const roots = {
-        state: snapshot && snapshot.state || {},
-        modData: snapshot && snapshot.modData || {}
-      };
-      const queue = [{ value: roots, path: [], depth: 0 }];
-      const seen = new Set();
-      const output = [];
-      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|place|clock|time|minute|skill|phase|status|occupation|job|origin|background|class|profession|identity|role|energy)/i;
-      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i;
-      const labels = [
-        [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
-        [/rank/i, '등급'], [/reputation/i, '평판'],
-        [/relationship|affection|trust/i, '관계'], [/quest/i, '퀘스트'],
-        [/floor/i, '층'], [/progress/i, '진행'], [/turn/i, '턴'],
-        [/debt/i, '부채'], [/score/i, '점수'], [/experience|xp/i, '경험치'],
-        [/location|region|place/i, '장소'], [/minute/i, '분'], [/clock|time/i, '시간'], [/phase|status/i, '상태'], [/occupation|job|profession|role/i, '역할'], [/origin|background|identity/i, '배경'], [/class/i, '분류'], [/energy/i, '기력'], [/skill/i, '기술']
-      ];
-      let visited = 0;
-      while (queue.length && visited < 2500 && output.length < 12) {
-        const item = queue.shift();
-        const value = item.value;
-        if (!value || typeof value !== 'object' || seen.has(value) || item.depth > 8) continue;
-        seen.add(value);
-        for (const [key, child] of Object.entries(value)) {
-          visited += 1;
-          const path = item.path.concat(key);
-          if ((typeof child === 'string' || typeof child === 'number') &&
-              interesting.test(key) && !excluded.test(key)) {
-            const text = String(child).trim();
-            if (text && text.length <= 48 && !output.some(entry => entry.value === text)) {
-              const label = (labels.find(([pattern]) => pattern.test(key)) || [null, key])[1];
-              output.push({ label, value: text, path: path.join('.') });
-            }
-          } else if (child && typeof child === 'object' && item.depth < 8) {
-            queue.push({ value: child, path, depth: item.depth + 1 });
-          }
-        }
-      }
-      return output;
-    }
-
-    function makeSummary(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const roots = { state, modData: snapshot && snapshot.modData || {} };
-      const day = firstValue(roots, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
-      const gold = firstValue(roots, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
-      const role = firstValue(roots, [/^(role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i]);
-      const character = activeCharacterName(snapshot);
-      const parts = [];
-      if (character && day !== '') parts.push(String(character) + ' 진행일: ' + String(day));
-      else if (character) parts.push(String(character));
-      else if (day !== '') parts.push('진행일: ' + String(day));
-      if (gold !== '') parts.push(String(gold) + '골드');
-      if (role !== '') parts.push(String(role));
-      for (const extra of collectSummaryExtras(snapshot)) {
-        if (parts.length >= 5) break;
-        parts.push(extra.label + ': ' + extra.value);
-      }
-      return parts.join(' · ') || defaultTitle(state);
-    }
-
-    function truncateDriveProperty(value, maxBytes) {
-      const source = String(value == null ? '' : value);
-      let output = '';
-      let bytes = 0;
-      for (const character of source) {
-        const point = character.codePointAt(0);
-        const size = point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
-        if (bytes + size > maxBytes) break;
-        output += character;
-        bytes += size;
-      }
-      return output;
-    }
-
-    function buildDriveDisplayProperties(snapshot) {
-      const memo = String(snapshot && snapshot.memo || '').trim();
-      return {
-        wmlSummary: truncateDriveProperty(makeSummary(snapshot), 120),
-        wmlMemoPreview: truncateDriveProperty(memo.replace(/\s+/g, ' '), 100),
-        wmlHasMemo: memo ? '1' : '0'
-      };
-    }
     function defaultTitle(state) {
       const day = Number(state && state.day);
       return Number.isFinite(day) && day > 0 ? 'Day ' + day : 'Wayward 세이브';
@@ -872,86 +761,6 @@ WML.define({
       }
       return '';
     }
-    function activeCharacterName(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const characters = state.characters;
-      const primaryId = state.primaryCharacterId;
-      let active = characters ? characters[String(primaryId == null ? 'wife' : primaryId)] : null;
-      if (!active && characters && typeof characters === 'object') {
-        active = Object.values(characters).find(value => value && typeof value === 'object' &&
-          (value.isPrimary === true || value.isMain === true || value.primary === true)) || null;
-      }
-      for (const candidate of [active, state.player, state.character, state.wife]) {
-        const name = firstValue(candidate, [/^(name|displayName|characterName|playerName|wifeName|girlName)$/i]);
-        if (name !== '') return name;
-      }
-      return firstValue({
-        state,
-        modData: snapshot && snapshot.modData || {}
-      }, [/^(characterName|playerName|protagonistName|heroName|mainCharacterName|girlName|wifeName)$/i]);
-    }
-
-    function collectSummaryExtras(snapshot) {
-      const roots = {
-        state: snapshot && snapshot.state || {},
-        modData: snapshot && snapshot.modData || {}
-      };
-      const queue = [{ value: roots, path: [], depth: 0 }];
-      const seen = new Set();
-      const output = [];
-      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|place|clock|time|minute|skill|phase|status|occupation|job|origin|background|class|profession|identity|role|energy)/i;
-      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i;
-      const labels = [
-        [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
-        [/rank/i, '등급'], [/reputation/i, '평판'],
-        [/relationship|affection|trust/i, '관계'], [/quest/i, '퀘스트'],
-        [/floor/i, '층'], [/progress/i, '진행'], [/turn/i, '턴'],
-        [/debt/i, '부채'], [/score/i, '점수'], [/experience|xp/i, '경험치'],
-        [/location|region|place/i, '장소'], [/minute/i, '분'], [/clock|time/i, '시간'], [/phase|status/i, '상태'], [/occupation|job|profession|role/i, '역할'], [/origin|background|identity/i, '배경'], [/class/i, '분류'], [/energy/i, '기력'], [/skill/i, '기술']
-      ];
-      let visited = 0;
-      while (queue.length && visited < 2500 && output.length < 12) {
-        const item = queue.shift();
-        const value = item.value;
-        if (!value || typeof value !== 'object' || seen.has(value) || item.depth > 8) continue;
-        seen.add(value);
-        for (const [key, child] of Object.entries(value)) {
-          visited += 1;
-          const path = item.path.concat(key);
-          if ((typeof child === 'string' || typeof child === 'number') &&
-              interesting.test(key) && !excluded.test(key)) {
-            const text = String(child).trim();
-            if (text && text.length <= 48 && !output.some(entry => entry.value === text)) {
-              const label = (labels.find(([pattern]) => pattern.test(key)) || [null, key])[1];
-              output.push({ label, value: text, path: path.join('.') });
-            }
-          } else if (child && typeof child === 'object' && item.depth < 8) {
-            queue.push({ value: child, path, depth: item.depth + 1 });
-          }
-        }
-      }
-      return output;
-    }
-
-    function makeSummary(snapshot) {
-      const roots = {
-        state: snapshot && snapshot.state || {},
-        modData: snapshot && snapshot.modData || {}
-      };
-      const day = firstValue(roots, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
-      const currency = firstValue(roots, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
-      const character = activeCharacterName(snapshot);
-      const parts = [];
-      if (character !== '') parts.push(String(character));
-      if (day !== '') parts.push('일 ' + String(day));
-      if (currency !== '') parts.push('재화 ' + String(currency));
-      for (const extra of collectSummaryExtras(snapshot)) {
-        if (parts.length >= 5) break;
-        parts.push(extra.label + ': ' + extra.value);
-      }
-      return parts.join(' · ');
-    }
-
     function truncateDriveProperty(value, maxBytes) {
       const source = String(value == null ? '' : value);
       let output = '';
@@ -966,33 +775,16 @@ WML.define({
       return output;
     }
 
-    function firstFlag(root, patterns) {
-      const seen = new Set(), queue = [{ value: root, depth: 0 }];
-      while (queue.length) {
-        const item = queue.shift();
-        if (!item.value || typeof item.value !== 'object' || seen.has(item.value) || item.depth > 5) continue;
-        seen.add(item.value);
-        for (const [key, value] of Object.entries(item.value)) {
-          if (patterns.some(pattern => pattern.test(key)) &&
-              (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string')) {
-            return value === true || value === 1 || /^(true|1|yes)$/i.test(String(value));
-          }
-          if (value && typeof value === 'object') queue.push({ value, depth: item.depth + 1 });
-        }
-      }
-      return false;
-    }
-
     function nativeSaveDisplay(snapshot) {
-      const native = snapshot && snapshot.nativeSave && typeof snapshot.nativeSave === 'object'
+      const native = snapshot && snapshot.nativeSave &&
+        typeof snapshot.nativeSave === 'object' && !Array.isArray(snapshot.nativeSave)
         ? snapshot.nativeSave
-        : {};
-      const savedAtValue = native.savedAt || snapshot && snapshot.savedAt;
-      const savedAtDate = typeof savedAtValue === 'string'
-        ? new Date(savedAtValue)
-        : new Date(Number(savedAtValue));
-      const savedAt = Number.isFinite(savedAtDate.getTime()) ? savedAtDate.toISOString() : '';
-      return { savedAt, summary: makeSummary(snapshot) };
+        : null;
+      const value = native && native.savedAt;
+      const date = typeof value === 'string' ? new Date(value) : new Date(Number(value));
+      return {
+        savedAt: value != null && Number.isFinite(date.getTime()) ? date.toISOString() : ''
+      };
     }
 
     function buildDriveDisplayProperties(snapshot) {
@@ -1001,12 +793,10 @@ WML.define({
       const firstLine = memo.split(/\r\n|\n|\r/, 1)[0].trim();
       const native = nativeSaveDisplay(snapshot);
       const properties = {
-        wmlDisplayVersion: '2',
+        wmlDisplayVersion: '3',
         wmlMemoPreview: truncateDriveProperty(firstLine, 100),
         wmlHasMemo: hasMemo ? '1' : '0'
       };
-      const summary = truncateDriveProperty(native.summary, 120);
-      if (summary) properties.wmlSummary = summary;
       if (native.savedAt) properties.wmlNativeSavedAt = truncateDriveProperty(native.savedAt, 40);
       return properties;
     }
@@ -1427,6 +1217,7 @@ WML.define({
 
     function formatSlotSummary(file) {
       const properties = file && file.appProperties || {};
+      if (properties.wmlDisplayVersion === '3') return '';
       if (properties.wmlDisplayVersion === '2') return String(properties.wmlSummary || '');
       const parts = [];
       const add = (label, value) => {
@@ -1470,7 +1261,9 @@ WML.define({
     function formatSlotMetadata(file) {
       const properties = file && file.appProperties || {};
       const nativeTimestamp = Date.parse(String(properties.wmlNativeSavedAt || ''));
-      const fallbackTimestamp = Date.parse(String(file && file.modifiedTime || ''));
+      const fallbackTimestamp = properties.wmlDisplayVersion === '3'
+        ? NaN
+        : Date.parse(String(file && file.modifiedTime || ''));
       const timestamp = Number.isFinite(nativeTimestamp) ? nativeTimestamp : fallbackTimestamp;
       if (!Number.isFinite(timestamp)) return '';
       return new Date(timestamp).toLocaleString(undefined, {
