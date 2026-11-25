@@ -44,7 +44,7 @@ jobs:
           node --check scripts/test-cloudsave-display-metadata.cjs
       - name: Verify native and browser authentication contracts
         run: node scripts/test-cloudsave-063.cjs
-      - name: Verify dynamic save summaries and memo UI
+      - name: Verify native metadata preservation and memo UI
         run: node scripts/test-cloudsave-display-metadata.cjs
       - name: Verify diff and package
         run: |
