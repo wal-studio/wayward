@@ -833,6 +833,109 @@ WML.define({
       return parts.join(' · ') || defaultTitle(state);
     }
 
+    function nativeSaveProfile(snapshot) {
+      const game = String(snapshot && snapshot.game || '').toLowerCase();
+      if (game.includes('blueblood')) return 'blueblood';
+      if (game.includes('overtime')) return 'overtime';
+      if (game.includes('hunt')) return 'hunt';
+      return 'wayward';
+    }
+
+    function nativePlayTimeText(value) {
+      const minutes = Math.floor((Number(value) || 0) / 60);
+      const hours = Math.floor(minutes / 60);
+      if (minutes < 1) return '';
+      return hours
+        ? '플레이 ' + hours + '시간 ' + (minutes % 60) + '분'
+        : '플레이 ' + minutes + '분';
+    }
+
+    function nativeSaveDisplay(snapshot) {
+      const state = snapshot && snapshot.state || {};
+      const profile = nativeSaveProfile(snapshot);
+      const game = String(snapshot && snapshot.game || '');
+      const version = String(snapshot && snapshot.gameVersion || '');
+      const savedAtValue = snapshot && snapshot.savedAt;
+      const savedAtDate = typeof savedAtValue === 'string'
+        ? new Date(savedAtValue)
+        : new Date(Number(savedAtValue));
+      const savedAt = Number.isFinite(savedAtDate.getTime()) ? savedAtDate.toISOString() : '';
+      const display = { profile, game, version, savedAt, summary: makeSummary(snapshot) };
+
+      if (profile === 'overtime') {
+        const character = activeCharacterName(snapshot);
+        const day = state.day;
+        const gold = state.economy && state.economy.gold;
+        const phase = state.phase;
+        const playSeconds = state.wfPlaySeconds;
+        display.day = day == null ? '' : String(day);
+        display.gold = gold == null ? '' : String(gold);
+        display.name = character;
+        display.phase = phase == null ? '' : String(phase);
+        display.playSeconds = playSeconds == null ? '' : String(playSeconds);
+        const parts = [];
+        if (character) parts.push(character);
+        if (day != null && day !== '') parts.push(String(day) + '일차');
+        if (gold != null && gold !== '') parts.push(String(gold) + '골드');
+        if (phase) parts.push(String(phase));
+        const playTime = nativePlayTimeText(playSeconds);
+        if (playTime) parts.push(playTime);
+        display.summary = parts.join(' · ') || display.summary;
+      } else if (profile === 'blueblood') {
+        const now = state.now && typeof state.now === 'object' ? state.now : state;
+        const day = firstValue({ state: now }, [/^(day|currentDay|daysPassed)$/i]);
+        const clock = firstValue({ state: now }, [/^(clock|time|currentTime)$/i]);
+        const place = firstValue({ state: now }, [/^(place|location|region)$/i]);
+        const cheated = firstValue({ state, modData: snapshot && snapshot.modData || {} },
+          [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
+        display.day = day === '' ? '' : String(day);
+        display.clock = clock === '' ? '' : String(clock);
+        display.place = place === '' ? '' : String(place);
+        display.cheated = cheated === true || cheated === 1 ||
+          /^(true|1|yes)$/i.test(String(cheated));
+        const parts = [];
+        const character = activeCharacterName(snapshot);
+        if (character) parts.push(character);
+        if (day !== '') parts.push(String(day) + '일');
+        if (clock !== '') parts.push(String(clock));
+        if (place !== '') parts.push(String(place));
+        if (parts.length) display.summary = parts.join(' · ');
+      } else if (profile === 'hunt') {
+        const modData = snapshot && snapshot.modData || {};
+        const queue = [modData];
+        const seen = new Set();
+        let tutor = null;
+        while (queue.length && !tutor) {
+          const value = queue.shift();
+          if (!value || typeof value !== 'object' || seen.has(value)) continue;
+          seen.add(value);
+          if (['score', 'lessons', 'wins', 'losses'].some(key => Object.prototype.hasOwnProperty.call(value, key))) {
+            tutor = value;
+            break;
+          }
+          for (const child of Object.values(value)) if (child && typeof child === 'object') queue.push(child);
+        }
+        if (tutor) {
+          for (const key of ['day', 'score', 'lessons', 'wins', 'losses', 'streak', 'alert', 'firedDay', 'examDay', 'exam', 'job']) {
+            if (tutor[key] != null && (typeof tutor[key] === 'string' || typeof tutor[key] === 'number')) {
+              display[key] = String(tutor[key]);
+            }
+          }
+          display.fired = tutor.fired === true;
+          display.outside = tutor.outside === true;
+          const parts = [];
+          if (display.day) parts.push(display.day + '일');
+          if (display.score) parts.push(display.score + '점');
+          if (display.lessons) parts.push(display.lessons + '회 수업');
+          if (display.wins || display.losses) parts.push((display.wins || '0') + '승 ' + (display.losses || '0') + '패');
+          if (display.streak) parts.push('연승 ' + display.streak);
+          if (display.job) parts.push(display.job);
+          if (parts.length) display.summary = parts.join(' · ');
+        }
+      }
+      return display;
+    }
+
     function truncateDriveProperty(value, maxBytes) {
       const source = String(value == null ? '' : value);
       let output = '';
@@ -851,8 +954,21 @@ WML.define({
       const memo = String(snapshot && snapshot.memo || '');
       const hasMemo = memo.trim().length > 0;
       const firstLine = memo.split(/\r\n|\n|\r/, 1)[0].trim();
+      const native = nativeSaveDisplay(snapshot);
+      const property = (value, maxBytes = 120) =>
+        value == null || value === '' ? '' : truncateDriveProperty(String(value), maxBytes);
       return {
-        wmlSummary: truncateDriveProperty(makeSummary(snapshot), 120),
+        wmlSummary: truncateDriveProperty(native.summary || makeSummary(snapshot), 120),
+        wmlNativeProfile: property(native.profile, 32),
+        wmlNativeGame: property(native.game, 80),
+        wmlNativeVersion: property(native.version, 80),
+        wmlNativeSavedAt: property(native.savedAt, 40),
+        wmlNativeDay: property(native.day),
+        wmlNativeGold: property(native.gold),
+        wmlNativeName: property(native.name),
+        wmlNativePhase: property(native.phase),
+        wmlNativePlaySeconds: property(native.playSeconds),
+        wmlNativeCheated: native.cheated ? '1' : '0',
         wmlMemoPreview: truncateDriveProperty(firstLine, 100),
         wmlHasMemo: hasMemo ? '1' : '0'
       };
