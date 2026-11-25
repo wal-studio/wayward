@@ -691,28 +691,6 @@ WML.define({
       await refreshSlots();
     }
 
-    async function writeSlotDisplayMetadata(slot, snapshot) {
-      const file = currentFile(slot);
-      if (!file) throw new Error('저장 파일의 표시 정보를 연결하지 못했습니다.');
-      const appProperties = Object.assign(
-        {},
-        file.appProperties || {},
-        buildDriveDisplayProperties(snapshot)
-      );
-      await driveFetch('/drive/v3/files/' + encodeURIComponent(file.id), {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-        body: JSON.stringify({ appProperties })
-      });
-      const updated = Object.assign({}, file, { appProperties });
-      driveSlots = driveSlots.map(item => item.id === file.id ? updated : item);
-      const cacheKey = driveAccountCacheIdentity || {
-        memoryKey: driveAccountMemoryKey, storageKey: ''
-      };
-      writeAccountSlotCache(cacheKey, driveSlots);
-      if (isConnected()) render();
-    }
-
     async function deleteSlot(slot) {
       const file = currentFile(slot);
       if (!file) throw new Error('삭제할 저장 파일을 찾지 못했습니다.');
@@ -909,6 +887,28 @@ WML.define({
 
     function isConnected() {
       return !!(win && win.el && win.el.isConnected);
+    }
+
+    async function writeSlotDisplayMetadata(slot, snapshot) {
+      const file = currentFile(slot);
+      if (!file) throw new Error('저장 파일의 표시 정보를 연결하지 못했습니다.');
+      const appProperties = Object.assign(
+        {},
+        file.appProperties || {},
+        buildDriveDisplayProperties(snapshot)
+      );
+      await driveFetch('/drive/v3/files/' + encodeURIComponent(file.id), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+        body: JSON.stringify({ appProperties })
+      });
+      const updated = Object.assign({}, file, { appProperties });
+      driveSlots = driveSlots.map(item => item.id === file.id ? updated : item);
+      const cacheKey = driveAccountCacheIdentity || {
+        memoryKey: driveAccountMemoryKey, storageKey: ''
+      };
+      writeAccountSlotCache(cacheKey, driveSlots);
+      if (isConnected()) render();
     }
 
     function render() {
