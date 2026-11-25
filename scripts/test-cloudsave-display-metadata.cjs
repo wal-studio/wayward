@@ -19,7 +19,7 @@ const summaryHelpers = section(
   '    function firstValue(root, patterns) {',
   '    function applySnapshot(snapshot) {'
 );
-vm.runInContext(summaryHelpers + '\nthis.__summary = { makeSummary, buildDriveDisplayProperties, truncateDriveProperty };', context);
+vm.runInContext(summaryHelpers + '\nthis.__summary = { makeSummary, buildDriveDisplayProperties, truncateDriveProperty, nativeSaveDisplay, nativeSaveProfile, nativePlayTimeText };', context);
 const normalizeHelpers = section(
   source,
   '    function normalizeAppProperties(value, includeMemoPreview) {',
@@ -57,11 +57,74 @@ assert.match(alternateSummary, /탐험가/);
 assert.match(alternateSummary, /챕터: 4|관계: 88/,
   'additional mod-specific save fields must be discovered without a mod-ID allowlist');
 
+const overtime = context.__summary.nativeSaveDisplay({
+  game: 'overtime-1.6.2',
+  gameVersion: '1.6.2',
+  savedAt: new Date('2026-11-26T01:00:00Z').getTime(),
+  state: {
+    day: 14,
+    economy: { gold: 123 },
+    primaryCharacterId: 'wife',
+    characters: { wife: { name: '피파' } },
+    phase: '저녁',
+    wfPlaySeconds: 3661
+  },
+  modData: {}
+});
+assert.equal(overtime.profile, 'overtime');
+assert.equal(overtime.day, '14');
+assert.equal(overtime.gold, '123');
+assert.equal(overtime.name, '피파');
+assert.equal(overtime.phase, '저녁');
+assert.equal(overtime.playSeconds, '3661');
+assert.match(overtime.summary, /피파/);
+assert.match(overtime.summary, /14일차/);
+assert.match(overtime.summary, /123골드/);
+assert.match(overtime.summary, /플레이 1시간 1분/);
+
+const blueblood = context.__summary.nativeSaveDisplay({
+  game: 'blueblood-0.1.7',
+  gameVersion: '0.1.7',
+  savedAt: new Date('2026-11-26T01:00:00Z').getTime(),
+  state: {
+    now: { day: 8, clock: '08:30', place: '침실' },
+    player: { name: '아리아' },
+    cheated: true
+  },
+  modData: {}
+});
+assert.equal(blueblood.profile, 'blueblood');
+assert.equal(blueblood.day, '8');
+assert.equal(blueblood.clock, '08:30');
+assert.equal(blueblood.place, '침실');
+assert.equal(blueblood.cheated, true);
+assert.match(blueblood.summary, /08:30/);
+assert.match(blueblood.summary, /침실/);
+
+const hunt = context.__summary.nativeSaveDisplay({
+  game: 'hunt-0.3.0',
+  gameVersion: '0.3.0',
+  savedAt: new Date('2026-11-26T01:00:00Z').getTime(),
+  state: {},
+  modData: {
+    'tutor-chaea': { day: 7, score: 82, lessons: 5, wins: 4, losses: 1, streak: 3, job: '교사' }
+  }
+});
+assert.equal(hunt.profile, 'hunt');
+assert.equal(hunt.day, '7');
+assert.equal(hunt.score, '82');
+assert.equal(hunt.lessons, '5');
+assert.match(hunt.summary, /7일/);
+assert.match(hunt.summary, /82점/);
+assert.match(hunt.summary, /4승 1패/);
+
 const display = context.__summary.buildDriveDisplayProperties({
   ...sample,
   memo: '첫 줄\n두 번째 줄 — 메모 전체 내용'
 });
 assert.equal(display.wmlHasMemo, '1');
+assert.equal(display.wmlNativeProfile, 'wayward');
+assert.ok(display.wmlNativeSavedAt, 'per-save native timestamp must be cached in Drive appProperties');
 assert.equal(display.wmlMemoPreview, '첫 줄', 'save-list memo preview must contain only the first line');
 assert.doesNotMatch(display.wmlMemoPreview, /두 번째 줄/, 'later memo lines must remain available only inside the encrypted snapshot');
 assert.ok(Buffer.byteLength(display.wmlSummary, 'utf8') <= 120);
@@ -89,6 +152,8 @@ assert.match(source, /memoChip\.addEventListener\('click', \(\) => runAction\(\(
 assert.match(source, /showMemoPopup\(String\(snapshot\.memo \|\| ''\)/);
 assert.match(source, /await writeSlotDisplayMetadata\(slot, snapshot\)/);
 assert.match(source, /wmlMemoPreview/);
+assert.match(source, /wmlNativeProfile/);
+assert.match(source, /wmlNativeSavedAt/);
 assert.match(source, /wmlHasMemo/);
 assert.doesNotMatch(source, /hina|히나/,
   'summary extraction must not hardcode a specific character or mod');
