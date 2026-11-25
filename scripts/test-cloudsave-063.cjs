@@ -211,8 +211,12 @@ function makeHarness({ protocol = 'https:', origin = 'https://game.example', nat
   }
 
   // Protected save/restore and encrypted slot I/O must be byte-identical to 0.6.2.
+  // Native save capture is the sole intentional snapshot change: preserve the
+  // complete serializer envelope while keeping the existing state restore path.
+  const snapshotSource = section(source, '    function buildSnapshot()', '    function defaultTitle(state)');
+  assert.match(snapshotSource, /nativeSave: native/);
+  assert.match(snapshotSource, /native\.format === 1/);
   for (const [start, end] of [
-    ['    function buildSnapshot()', '    function firstValue(root'],
     ['    function applySnapshot(snapshot)', '    function isConnected()'],
     ['    async function writeSlotEnvelope(slot, envelope)', '    async function deleteSlot(slot)'],
     ['    async function deleteSlot(slot)', '    function buildSnapshot()']
