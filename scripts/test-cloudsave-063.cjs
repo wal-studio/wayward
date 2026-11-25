@@ -34,10 +34,6 @@ assert.doesNotMatch(source, /function requestNativeGoogleToken\s*\(/,
 assert.doesNotMatch(source, /function attemptNativeSessionRestore\s*\(/,
   'opening the mod must not launch a background native auth request');
 assert.doesNotMatch(source, /attemptNativeSessionRestore\s*\(/);
-assert.doesNotMatch(source, /host\.startGoogleDriveAuth(?:WithPolicy)?\s*\(/,
-  'the launcher bridge owns the native invocation');
-assert.doesNotMatch(source, /host\.takePendingStateForNonce\s*\(/,
-  'the launcher bridge owns native result polling');
 assert.doesNotMatch(source, /localStorage\.setItem\([^\n]*(?:accessToken|refreshToken)/i);
 assert.doesNotMatch(source, /sessionStorage\.setItem\([^\n]*(?:accessToken|refreshToken)/i);
 assert.doesNotMatch(source, /restore-pending/,
@@ -45,6 +41,12 @@ assert.doesNotMatch(source, /restore-pending/,
 
 const acceptSource = section(source, '    function acceptAccessToken(payload, nonce) {', '    function requestGoogleToken(forceSelectAccount) {');
 const requestSource = section(source, '    function requestGoogleToken(forceSelectAccount) {', '    async function ensureAccessToken() {');
+assert.equal(acceptSource, section(baseline, '    function acceptAccessToken(payload, nonce) {', '    function requestNativeGoogleToken(nonce, forceSelectAccount) {'),
+  'token acceptance and error classification must remain unchanged from 0.6.2');
+assert.doesNotMatch(requestSource, /host\.startGoogleDriveAuth(?:WithPolicy)?\s*\(/,
+  'CloudSave must not call the native start API directly');
+assert.doesNotMatch(requestSource, /host\.takePendingStateForNonce\s*\(/,
+  'CloudSave must not poll native auth results directly');
 
 function makeHarness({ protocol = 'https:', origin = 'https://game.example', native = true } = {}) {
   const nonce = 'a'.repeat(48);
