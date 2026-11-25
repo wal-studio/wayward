@@ -110,7 +110,9 @@ assert.equal(blueblood.place, '침실');
 assert.equal(blueblood.cheated, true);
 assert.equal(blueblood.now, JSON.stringify({ day: 8, clock: '08:30', place: '침실' }));
 assert.match(blueblood.summary, /08:30/);
-assert.match(blueblood.summary, /침실/);
+assert.match(blueblood.summary, /8일/);
+assert.match(blueblood.summary, /08:30/);
+assert.doesNotMatch(blueblood.summary, /아리아|침실/);
 const bluebloodProperties = context.__summary.buildDriveDisplayProperties({
   game: 'blueblood-0.1.7',
   gameVersion: '0.1.7',
