@@ -15,6 +15,30 @@ WML.define({
       "doc": "게임 기본 일시정지 메뉴. 버전에 따라 없어도 모드의 클라우드 창은 사용할 수 있습니다.",
       "optional": true,
       "find": { "all": ["\"support\""], "len": 2849, "any": ["\"save\"", ".returnToTitle", "\"changelog\"", "\"settings\"", "onDone:", "\"load\""] }
+    },
+    "waywardNativeSaveSlotText": {
+      "doc": "Wayward WML 네이티브 저장 목록의 실제 행 메타데이터 렌더러(zoe).",
+      "optional": true,
+      "find": {
+        "all": ["\"진행일: \"", "e.gold??\"?\"", "e.phase??\"\"", "HD(e.savedAt)"],
+        "len": 464
+      }
+    },
+    "faithNativeSaveSlotText": {
+      "doc": "Faith 네이티브 저장 목록의 실제 행 메타데이터 렌더러(VF).",
+      "optional": true,
+      "find": {
+        "all": ["\"손상된 데이터 — 불러올 수 없음\"", "o.day??\"?\"", "prep:\"집회 준비\"", "wfPlayTimeText(o.playSeconds)", "q2(o.savedAt)"],
+        "len": 613
+      }
+    },
+    "faithNativeSaveCharacter": {
+      "doc": "Faith 네이티브 저장 메타데이터와 동일한 주 캐릭터 조회 함수(vn).",
+      "optional": true,
+      "find": {
+        "all": ["s===wfPrisonerId?o.wfPrisoner", "s===wfTavernGuestId?o.wfTavernGuest", "o.characters[s]"],
+        "len": 106
+      }
     }
   },
   async setup(api) {
@@ -75,11 +99,12 @@ WML.define({
         '.wml-gd-input{box-sizing:border-box;width:100%;min-width:0;min-height:42px;padding:9px 11px;border:1px solid var(--wml-border,#7778);border-radius:8px;background:var(--wml-panel,#00000010);color:inherit;font:inherit}' +
         '.wml-gd-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}' +
         '.wml-gd-slot{display:flex;flex-direction:column;gap:8px;padding:11px;border:1px solid var(--wml-border,#7778);border-radius:9px}' +
-        '.wml-gd-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}' +
+        '.wml-gd-slot-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}' +
         '.wml-gd-slot-title{font-weight:600;overflow-wrap:anywhere;min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}' +
-        '.wml-gd-slot-line{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden}' +
+        '.wml-gd-slot-line{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;flex:1 1 auto;white-space:nowrap;overflow:hidden}' +
+        '.wml-gd-slot-timestamp{flex:0 0 auto;max-width:48%;font-size:.78em;line-height:1.35;text-align:right;white-space:normal;opacity:.68}' +
         '.wml-gd-memo-chip{min-width:0;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;color:inherit;text-align:left;text-decoration:underline;opacity:.78;padding:0;font:inherit;font-size:.9em;cursor:pointer}' +
-        '.wml-gd-summary{font-size:.86em;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+        '.wml-gd-summary{flex:0 0 100%;min-width:0;font-size:.86em;opacity:.82;white-space:normal;overflow-wrap:anywhere}' +
         '.wml-gd-memo-area{box-sizing:border-box;width:100%;min-height:72px;resize:vertical;padding:9px 11px;border:1px solid var(--wml-border,#7778);border-radius:8px;background:var(--wml-panel,#00000010);color:inherit;font:inherit}' +
         '.wml-gd-small{font-size:.82em;opacity:.72}' +
         '.wml-gd-wrap button{max-width:100%}' +
@@ -726,6 +751,8 @@ WML.define({
         ? native.modData
         : (stateToSave.mods && typeof stateToSave.mods === 'object' &&
           !Array.isArray(stateToSave.mods) ? stateToSave.mods : {});
+      const savedAt = Date.now();
+      const nativeDisplay = captureNativeSaveDisplay(stateToSave, native && native.savedAt);
       return {
         schema: 'wayward-cloud-save',
         version: 1,
@@ -733,128 +760,18 @@ WML.define({
         game: String(api.game || ''), // build identifier for diagnostics; not a compatibility gate
         gameVersion,
         nativeFormat: 1,
-        savedAt: Date.now(),
+        savedAt,
         memo: '',
         title: defaultTitle(stateToSave),
         state: stateToSave,
-        modData
+        modData,
+        ...(nativeDisplay ? { nativeDisplay } : {}),
+        ...(native && typeof native === 'object' && !Array.isArray(native)
+          ? { nativeSave: native }
+          : {})
       };
     }
 
-    function firstValue(root, patterns) {
-      const seen = new Set(), queue = [{ value: root, depth: 0 }];
-      while (queue.length) {
-        const item = queue.shift();
-        if (!item.value || typeof item.value !== 'object' || seen.has(item.value) || item.depth > 5) continue;
-        seen.add(item.value);
-        for (const [key, value] of Object.entries(item.value)) if (patterns.some(pattern => pattern.test(key)) && (typeof value === 'string' || typeof value === 'number') && String(value).trim()) return value;
-        for (const value of Object.values(item.value)) if (value && typeof value === 'object') queue.push({ value, depth: item.depth + 1 });
-      }
-      return '';
-    }
-    function activeCharacterName(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const characters = state.characters;
-      const primaryId = state.primaryCharacterId;
-      let active = characters ? characters[String(primaryId == null ? 'wife' : primaryId)] : null;
-      if (!active && characters && typeof characters === 'object') {
-        active = Object.values(characters).find(value => value && typeof value === 'object' &&
-          (value.isPrimary === true || value.isMain === true || value.primary === true)) || null;
-      }
-      for (const candidate of [active, state.player, state.character, state.wife]) {
-        const name = firstValue(candidate, [/^(name|displayName|characterName|playerName|wifeName|girlName)$/i]);
-        if (name !== '') return name;
-      }
-      return firstValue({
-        state,
-        modData: snapshot && snapshot.modData || {}
-      }, [/^(characterName|playerName|protagonistName|heroName|mainCharacterName|girlName|wifeName)$/i]);
-    }
-
-    function collectSummaryExtras(snapshot) {
-      const roots = {
-        state: snapshot && snapshot.state || {},
-        modData: snapshot && snapshot.modData || {}
-      };
-      const queue = [{ value: roots, path: [], depth: 0 }];
-      const seen = new Set();
-      const output = [];
-      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|skill)/i;
-      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash|role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i;
-      const labels = [
-        [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
-        [/rank/i, '등급'], [/reputation/i, '평판'],
-        [/relationship|affection|trust/i, '관계'], [/quest/i, '퀘스트'],
-        [/floor/i, '층'], [/progress/i, '진행'], [/turn/i, '턴'],
-        [/debt/i, '부채'], [/score/i, '점수'], [/experience|xp/i, '경험치'],
-        [/location|region/i, '장소'], [/skill/i, '기술']
-      ];
-      let visited = 0;
-      while (queue.length && visited < 2500 && output.length < 12) {
-        const item = queue.shift();
-        const value = item.value;
-        if (!value || typeof value !== 'object' || seen.has(value) || item.depth > 8) continue;
-        seen.add(value);
-        for (const [key, child] of Object.entries(value)) {
-          visited += 1;
-          const path = item.path.concat(key);
-          if ((typeof child === 'string' || typeof child === 'number') &&
-              interesting.test(key) && !excluded.test(key)) {
-            const text = String(child).trim();
-            if (text && text.length <= 48 && !output.some(entry => entry.value === text)) {
-              const label = (labels.find(([pattern]) => pattern.test(key)) || [null, key])[1];
-              output.push({ label, value: text, path: path.join('.') });
-            }
-          } else if (child && typeof child === 'object' && item.depth < 8) {
-            queue.push({ value: child, path, depth: item.depth + 1 });
-          }
-        }
-      }
-      return output;
-    }
-
-    function makeSummary(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const roots = { state, modData: snapshot && snapshot.modData || {} };
-      const day = firstValue(roots, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
-      const gold = firstValue(roots, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
-      const role = firstValue(roots, [/^(role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i]);
-      const character = activeCharacterName(snapshot);
-      const parts = [];
-      if (character && day !== '') parts.push(String(character) + ' 진행일: ' + String(day));
-      else if (character) parts.push(String(character));
-      else if (day !== '') parts.push('진행일: ' + String(day));
-      if (gold !== '') parts.push(String(gold) + '골드');
-      if (role !== '') parts.push(String(role));
-      for (const extra of collectSummaryExtras(snapshot)) {
-        if (parts.length >= 5) break;
-        parts.push(extra.label + ': ' + extra.value);
-      }
-      return parts.join(' · ') || defaultTitle(state);
-    }
-
-    function truncateDriveProperty(value, maxBytes) {
-      const source = String(value == null ? '' : value);
-      let output = '';
-      let bytes = 0;
-      for (const character of source) {
-        const point = character.codePointAt(0);
-        const size = point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
-        if (bytes + size > maxBytes) break;
-        output += character;
-        bytes += size;
-      }
-      return output;
-    }
-
-    function buildDriveDisplayProperties(snapshot) {
-      const memo = String(snapshot && snapshot.memo || '').trim();
-      return {
-        wmlSummary: truncateDriveProperty(makeSummary(snapshot), 120),
-        wmlMemoPreview: truncateDriveProperty(memo.replace(/\s+/g, ' '), 100),
-        wmlHasMemo: memo ? '1' : '0'
-      };
-    }
     function defaultTitle(state) {
       const day = Number(state && state.day);
       return Number.isFinite(day) && day > 0 ? 'Day ' + day : 'Wayward 세이브';
@@ -871,85 +788,57 @@ WML.define({
       }
       return '';
     }
-    function activeCharacterName(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const characters = state.characters;
-      const primaryId = state.primaryCharacterId;
-      let active = characters ? characters[String(primaryId == null ? 'wife' : primaryId)] : null;
-      if (!active && characters && typeof characters === 'object') {
-        active = Object.values(characters).find(value => value && typeof value === 'object' &&
-          (value.isPrimary === true || value.isMain === true || value.primary === true)) || null;
+    function reactElementText(node) {
+      if (node == null || typeof node === 'boolean') return '';
+      if (typeof node === 'string' || typeof node === 'number') return String(node);
+      if (Array.isArray(node)) return node.map(reactElementText).join('');
+      if (typeof node === 'object' && node.props) {
+        return reactElementText(node.props.children);
       }
-      for (const candidate of [active, state.player, state.character, state.wife]) {
-        const name = firstValue(candidate, [/^(name|displayName|characterName|playerName|wifeName|girlName)$/i]);
-        if (name !== '') return name;
-      }
-      return firstValue({
-        state,
-        modData: snapshot && snapshot.modData || {}
-      }, [/^(characterName|playerName|protagonistName|heroName|mainCharacterName|girlName|wifeName)$/i]);
+      return '';
     }
 
-    function collectSummaryExtras(snapshot) {
-      const roots = {
-        state: snapshot && snapshot.state || {},
-        modData: snapshot && snapshot.modData || {}
-      };
-      const queue = [{ value: roots, path: [], depth: 0 }];
-      const seen = new Set();
-      const output = [];
-      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|skill)/i;
-      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash|role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i;
-      const labels = [
-        [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
-        [/rank/i, '등급'], [/reputation/i, '평판'],
-        [/relationship|affection|trust/i, '관계'], [/quest/i, '퀘스트'],
-        [/floor/i, '층'], [/progress/i, '진행'], [/turn/i, '턴'],
-        [/debt/i, '부채'], [/score/i, '점수'], [/experience|xp/i, '경험치'],
-        [/location|region/i, '장소'], [/skill/i, '기술']
-      ];
-      let visited = 0;
-      while (queue.length && visited < 2500 && output.length < 12) {
-        const item = queue.shift();
-        const value = item.value;
-        if (!value || typeof value !== 'object' || seen.has(value) || item.depth > 8) continue;
-        seen.add(value);
-        for (const [key, child] of Object.entries(value)) {
-          visited += 1;
-          const path = item.path.concat(key);
-          if ((typeof child === 'string' || typeof child === 'number') &&
-              interesting.test(key) && !excluded.test(key)) {
-            const text = String(child).trim();
-            if (text && text.length <= 48 && !output.some(entry => entry.value === text)) {
-              const label = (labels.find(([pattern]) => pattern.test(key)) || [null, key])[1];
-              output.push({ label, value: text, path: path.join('.') });
-            }
-          } else if (child && typeof child === 'object' && item.depth < 8) {
-            queue.push({ value: child, path, depth: item.depth + 1 });
+    // Mirror sb()/J0() metadata, then call the exact VF()/zoe() native save-row component.
+    // If a game's native renderer is not resolved, return empty instead of inventing a summary.
+    function captureNativeSaveDisplay(state, nativeSavedAt) {
+      if (!state || typeof state !== 'object') return '';
+      try {
+        let rendererName = '';
+        let characterResolver = null;
+        if (api.has('faithNativeSaveSlotText')) {
+          rendererName = 'faithNativeSaveSlotText';
+          if (api.has('faithNativeSaveCharacter')) {
+            characterResolver = api.fn('faithNativeSaveCharacter');
           }
+        } else if (api.has('waywardNativeSaveSlotText')) {
+          rendererName = 'waywardNativeSaveSlotText';
         }
-      }
-      return output;
-    }
+        if (!rendererName) return '';
 
-    function makeSummary(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const roots = { state, modData: snapshot && snapshot.modData || {} };
-      const day = firstValue(roots, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
-      const gold = firstValue(roots, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
-      const role = firstValue(roots, [/^(role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i]);
-      const character = activeCharacterName(snapshot);
-      const parts = [];
-      if (character && day !== '') parts.push(String(character) + ' 진행일: ' + String(day));
-      else if (character) parts.push(String(character));
-      else if (day !== '') parts.push('진행일: ' + String(day));
-      if (gold !== '') parts.push(String(gold) + '골드');
-      if (role !== '') parts.push(String(role));
-      for (const extra of collectSummaryExtras(snapshot)) {
-        if (parts.length >= 5) break;
-        parts.push(extra.label + ': ' + extra.value);
+        let primaryCharacter = null;
+        if (characterResolver) {
+          try {
+            primaryCharacter = characterResolver(state, state.primaryCharacterId);
+          } catch (_) {}
+        }
+        if (!primaryCharacter && state.characters && typeof state.characters === 'object') {
+          primaryCharacter = state.characters[state.primaryCharacterId] || null;
+        }
+
+        const nativeDate = nativeSavedAt == null ? null : new Date(nativeSavedAt);
+        const meta = {
+          exists: true,
+          day: state.day,
+          gold: state.economy && state.economy.gold,
+          wifeName: primaryCharacter && primaryCharacter.name,
+          phase: state.phase,
+          playSeconds: state.wfPlaySeconds
+        };
+        if (nativeDate && Number.isFinite(nativeDate.getTime())) meta.savedAt = nativeSavedAt;
+        return reactElementText(api.fn(rendererName)({ meta }));
+      } catch (_) {
+        return '';
       }
-      return parts.join(' · ') || defaultTitle(state);
     }
 
     function truncateDriveProperty(value, maxBytes) {
@@ -966,163 +855,55 @@ WML.define({
       return output;
     }
 
-    function firstFlag(root, patterns) {
-      const seen = new Set(), queue = [{ value: root, depth: 0 }];
-      while (queue.length) {
-        const item = queue.shift();
-        if (!item.value || typeof item.value !== 'object' || seen.has(item.value) || item.depth > 5) continue;
-        seen.add(item.value);
-        for (const [key, value] of Object.entries(item.value)) {
-          if (patterns.some(pattern => pattern.test(key)) &&
-              (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string')) {
-            return value === true || value === 1 || /^(true|1|yes)$/i.test(String(value));
-          }
-          if (value && typeof value === 'object') queue.push({ value, depth: item.depth + 1 });
+    function splitDriveProperty(value, maxBytes, maxChunks) {
+      const source = String(value == null ? '' : value);
+      if (!source) return [];
+      const chunks = [];
+      let current = '';
+      let bytes = 0;
+      for (const character of source) {
+        const point = character.codePointAt(0);
+        const size = point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
+        if (bytes + size > maxBytes) {
+          if (!current) return [];
+          chunks.push(current);
+          if (chunks.length >= maxChunks) return [];
+          current = '';
+          bytes = 0;
         }
+        current += character;
+        bytes += size;
       }
-      return false;
+      if (current) chunks.push(current);
+      return chunks.length <= maxChunks ? chunks : [];
     }
 
-    function nativeSaveProfile(snapshot) {
-      const nativeGame = snapshot && snapshot.nativeSave && snapshot.nativeSave.game;
-      const runtimeGame = typeof api !== 'undefined' && api.game && typeof api.game === 'object' ? api.game : null;
-      const game = String(nativeGame && nativeGame.id || runtimeGame && runtimeGame.id ||
-        snapshot && snapshot.game || globalThis.WML_GAME || '').toLowerCase();
-      if (game.includes('blueblood')) return 'blueblood';
-      if (game.includes('overtime')) return 'overtime';
-      if (game.includes('hunt')) return 'hunt';
-      return 'wayward';
-    }
-
-    function nativePlayTimeText(value) {
-      const minutes = Math.floor((Number(value) || 0) / 60);
-      const hours = Math.floor(minutes / 60);
-      if (minutes < 1) return '';
-      return hours
-        ? '플레이 ' + hours + '시간 ' + (minutes % 60) + '분'
-        : '플레이 ' + minutes + '분';
+    function readNativeDisplayProperties(properties) {
+      const count = Number(properties && properties.wmlNativeDisplayCount);
+      if (!Number.isInteger(count) || count < 1 || count > 16) return '';
+      let display = '';
+      for (let index = 0; index < count; index++) {
+        const chunk = properties['wmlNativeDisplay' + index];
+        if (typeof chunk !== 'string' || !chunk) return '';
+        display += chunk;
+      }
+      return display;
     }
 
     function nativeSaveDisplay(snapshot) {
-      const state = snapshot && snapshot.state || {};
-      const native = snapshot && snapshot.nativeSave && typeof snapshot.nativeSave === 'object'
+      const native = snapshot && snapshot.nativeSave &&
+        typeof snapshot.nativeSave === 'object' && !Array.isArray(snapshot.nativeSave)
         ? snapshot.nativeSave
-        : {};
-      const nativeGame = native.game && typeof native.game === 'object' ? native.game : {};
-      const runtimeGame = typeof api !== 'undefined' && api.game && typeof api.game === 'object' ? api.game : {};
-      const profile = nativeSaveProfile(snapshot);
-      const game = String(nativeGame.id || runtimeGame.id || snapshot && snapshot.game || globalThis.WML_GAME || '');
-      const version = String(nativeGame.version || runtimeGame.version || snapshot && snapshot.gameVersion || '');
-      const savedAtValue = native.savedAt || snapshot && snapshot.savedAt;
-      const savedAtDate = typeof savedAtValue === 'string'
-        ? new Date(savedAtValue)
-        : new Date(Number(savedAtValue));
-      const savedAt = Number.isFinite(savedAtDate.getTime()) ? savedAtDate.toISOString() : '';
-      const nativeString = value => value == null ? '' :
-        typeof value === 'object' ? JSON.stringify(value) : String(value);
-      const display = {
-        profile, game, version, savedAt, summary: makeSummary(snapshot),
-        label: nativeString(native.label),
-        clock: nativeString(native.clock),
-        engine: nativeString(native.engine)
+        : null;
+      // snapshot.savedAt is CloudSave time; only the native envelope timestamp belongs here.
+      const value = native && native.savedAt;
+      const date = typeof value === 'string' ? new Date(value) : new Date(Number(value));
+      return {
+        display: snapshot && typeof snapshot.nativeDisplay === 'string'
+          ? snapshot.nativeDisplay
+          : '',
+        savedAt: value != null && Number.isFinite(date.getTime()) ? date.toISOString() : ''
       };
-
-      if (profile === 'overtime') {
-        const character = activeCharacterName(snapshot);
-        const day = state.day;
-        const gold = state.economy && state.economy.gold;
-        const phase = state.phase;
-        const playSeconds = state.wfPlaySeconds;
-        display.day = day == null ? '' : String(day);
-        display.gold = gold == null ? '' : String(gold);
-        display.name = character;
-        display.phase = phase == null ? '' : String(phase);
-        display.playSeconds = playSeconds == null ? '' : String(playSeconds);
-        const phaseLabels = {
-          prep: '집회 준비',
-          service: '집회 중',
-          last_call: '마감 주문',
-          closed: '집회 종료',
-          bedroom: '잠자리'
-        };
-        const phaseLabel = phaseLabels[String(phase || '')] || String(phase || '');
-        const parts = [];
-        if (character) parts.push(character);
-        parts.push((day == null || day === '' ? '?' : String(day)) + '주째');
-        parts.push((gold == null || gold === '' ? '?' : String(gold)) + '만원');
-        if (phaseLabel) parts.push(phaseLabel);
-        const playTime = nativePlayTimeText(playSeconds);
-        if (playTime) parts.push(playTime);
-        display.summary = parts.join(' · ');
-      } else if (profile === 'blueblood') {
-        const now = state.now && typeof state.now === 'object' ? state.now : state;
-        const day = firstValue({ state: now }, [/^(day|currentDay|daysPassed)$/i]);
-        const clock = firstValue({ state: now }, [/^(clock|time|currentTime)$/i]);
-        const place = firstValue({ state: now }, [/^(place|location|region)$/i]);
-        const nowValue = state.now == null ? native.now : state.now;
-        display.day = day === '' ? '' : String(day);
-        display.clock = native.clock == null ? (clock === '' ? '' : String(clock)) : nativeString(native.clock);
-        display.place = place === '' ? '' : String(place);
-        display.now = nativeString(nowValue);
-        display.cheated = !!(state.cheats && Array.isArray(state.cheats.used) && state.cheats.used.length) ||
-          firstFlag({ state, modData: snapshot && snapshot.modData || {} },
-            [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
-        const parts = [];
-        if (day !== '') parts.push(String(day) + '일');
-        if (display.clock) parts.push(display.clock);
-        if (parts.length) display.summary = parts.join(' · ');
-        else if (typeof nowValue === 'string' || typeof nowValue === 'number') display.summary = String(nowValue);
-      } else if (profile === 'hunt') {
-        const modData = snapshot && snapshot.modData || state.modData || {};
-        const queue = [modData];
-        const seen = new Set();
-        let tutor = null;
-        while (queue.length && !tutor) {
-          const value = queue.shift();
-          if (!value || typeof value !== 'object' || seen.has(value)) continue;
-          seen.add(value);
-          if (['score', 'lessons', 'wins', 'losses'].some(key => Object.prototype.hasOwnProperty.call(value, key))) {
-            tutor = value;
-            break;
-          }
-          for (const child of Object.values(value)) if (child && typeof child === 'object') queue.push(child);
-        }
-        const time = state.time && typeof state.time === 'object' ? state.time : {};
-        const player = state.player && typeof state.player === 'object' ? state.player : {};
-        const scene = state.scene && typeof state.scene === 'object' ? state.scene : {};
-        display.day = time.day == null
-          ? (tutor && tutor.day != null ? String(tutor.day) : '')
-          : String(time.day);
-        display.minute = time.minute == null ? '' : String(time.minute);
-        display.name = player.name == null ? '' : String(player.name);
-        display.money = player.money == null ? '' : String(player.money);
-        display.energy = player.energy == null ? '' : String(player.energy);
-        display.location = scene.location == null ? '' : String(scene.location);
-        const parts = [];
-        if (display.name) parts.push(display.name);
-        if (display.day) parts.push(display.day + '일');
-        if (display.minute) {
-          const minute = Math.max(0, Number(display.minute) || 0);
-          parts.push(Math.floor(minute / 60) + ':' + String(minute % 60).padStart(2, '0'));
-        }
-        if (display.location) parts.push(display.location);
-        if (display.money) parts.push(display.money + '원');
-        if (display.energy) parts.push('기력 ' + display.energy);
-        if (tutor) {
-          for (const key of ['score', 'lessons', 'wins', 'losses', 'streak', 'alert', 'firedDay', 'examDay', 'exam', 'job']) {
-            if (tutor[key] != null && (typeof tutor[key] === 'string' || typeof tutor[key] === 'number')) {
-              display[key] = String(tutor[key]);
-            }
-          }
-          display.fired = tutor.fired === true;
-          if (display.score) parts.push(display.score + '점');
-          if (display.lessons) parts.push(display.lessons + '회 수업');
-          if (display.wins || display.losses) parts.push((display.wins || '0') + '승 ' + (display.losses || '0') + '패');
-          if (display.streak) parts.push('연승 ' + display.streak);
-        }
-        if (parts.length) display.summary = parts.join(' · ');
-      }
-      return display;
     }
 
     function buildDriveDisplayProperties(snapshot) {
@@ -1130,36 +911,21 @@ WML.define({
       const hasMemo = memo.trim().length > 0;
       const firstLine = memo.split(/\r\n|\n|\r/, 1)[0].trim();
       const native = nativeSaveDisplay(snapshot);
-      const property = (value, maxBytes = 120) =>
-        value == null || value === '' ? '' : truncateDriveProperty(String(value), maxBytes);
-      return {
-        wmlSummary: truncateDriveProperty(native.summary || makeSummary(snapshot), 120),
-        wmlNativeProfile: property(native.profile, 32),
-        wmlNativeGame: property(native.game, 80),
-        wmlNativeVersion: property(native.version, 80),
-        wmlNativeSavedAt: property(native.savedAt, 40),
-        wmlNativeNow: property(native.now),
-        wmlNativeLabel: property(native.label),
-        wmlNativeClock: property(native.clock),
-        wmlNativeEngine: property(native.engine),
-        wmlNativeDay: property(native.day),
-        wmlNativeMinute: property(native.minute),
-        wmlNativeGold: property(native.gold),
-        wmlNativeName: property(native.name),
-        wmlNativeLocation: property(native.location),
-        wmlNativeMoney: property(native.money),
-        wmlNativeEnergy: property(native.energy),
-        wmlNativePhase: property(native.phase),
-        wmlNativePlaySeconds: property(native.playSeconds),
-        wmlNativeScore: property(native.score),
-        wmlNativeLessons: property(native.lessons),
-        wmlNativeWins: property(native.wins),
-        wmlNativeLosses: property(native.losses),
-        wmlNativeStreak: property(native.streak),
-        wmlNativeCheated: native.cheated ? '1' : '0',
+      const displayChunks = splitDriveProperty(native.display, 124, 16);
+      const hasNativeDisplay = displayChunks.length > 0;
+      const properties = {
+        wmlDisplayVersion: hasNativeDisplay ? '4' : '3',
         wmlMemoPreview: truncateDriveProperty(firstLine, 100),
         wmlHasMemo: hasMemo ? '1' : '0'
       };
+      if (native.savedAt) properties.wmlNativeSavedAt = truncateDriveProperty(native.savedAt, 40);
+      if (hasNativeDisplay) {
+        properties.wmlNativeDisplayCount = String(displayChunks.length);
+        displayChunks.forEach((chunk, index) => {
+          properties['wmlNativeDisplay' + index] = chunk;
+        });
+      }
+      return properties;
     }
 
     function defaultTitle(state) {
@@ -1576,38 +1342,24 @@ WML.define({
       show({ page: 'home' }, '저장 슬롯 ' + slot + '을 삭제했습니다.');
     }
 
+    function formatSlotSummary(file) {
+      const properties = file && file.appProperties || {};
+      if (properties.wmlDisplayVersion !== '4') return '';
+      return readNativeDisplayProperties(properties);
+    }
+
     function formatSlotMetadata(file) {
       const properties = file && file.appProperties || {};
-      const profile = String(properties.wmlNativeProfile || '');
-      const nativeTimestamp = Date.parse(String(properties.wmlNativeSavedAt || ''));
-      const fallbackTimestamp = Date.parse(String(file && file.modifiedTime || ''));
-      const timestamp = Number.isFinite(nativeTimestamp) ? nativeTimestamp : fallbackTimestamp;
-      const parts = [];
-      if (Number.isFinite(timestamp)) {
-        const date = new Date(timestamp);
-        if (profile === 'overtime') {
-          parts.push(date.toLocaleString(undefined, {
-            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-          }));
-        } else if (profile === 'blueblood' || profile === 'hunt') {
-          parts.push(date.toLocaleString());
-        } else {
-          const hour = date.getHours();
-          const clock = (hour % 12 || 12) + ':' + String(date.getMinutes()).padStart(2, '0');
-          parts.push((date.getMonth() + 1) + '월 ' + date.getDate() + '일 ' +
-            (hour < 12 ? '오전 ' : '오후 ') + clock);
-        }
-      }
-      if (profile === 'blueblood' && properties.wmlNativeCheated === '1') parts.push('치트');
-      if (profile !== 'blueblood' && profile !== 'overtime' && profile !== 'hunt') {
-        const size = Number(file && file.size) || 0;
-        if (size > 0) {
-          parts.push(size < 1024 * 1024
-            ? Math.max(1, Math.round(size / 1024)) + ' KB'
-            : (size / (1024 * 1024)).toFixed(1) + ' MB');
-        }
-      }
-      return parts.join(' · ');
+      const timestamp = Date.parse(String(properties.wmlNativeSavedAt || ''));
+      if (!Number.isFinite(timestamp)) return '';
+      return new Date(timestamp).toLocaleString(undefined, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
     }
 
     function showMemoPopup(memo) {
@@ -1635,8 +1387,11 @@ WML.define({
         const snapshot = await globalThis.WMLGoogleDriveCrypto.decryptSnapshotEmbedded(envelope);
         const match = String(file && file.name || '').match(/([1-9][0-9]*)\.json$/);
         const slot = match ? Number(match[1]) : 0;
-        if (slot && (!file.appProperties || !file.appProperties.wmlSummary ||
-            file.appProperties.wmlHasMemo === undefined)) {
+        const appProperties = file && file.appProperties || {};
+        const nativeSummary = formatSlotSummary(file);
+        if (slot && (!['3', '4'].includes(String(appProperties.wmlDisplayVersion || '')) ||
+            appProperties.wmlHasMemo === undefined ||
+            (appProperties.wmlDisplayVersion === '4' && !nativeSummary))) {
           try { await writeSlotDisplayMetadata(slot, snapshot); } catch (_) {}
         }
         showMemoPopup(String(snapshot.memo || '') || '저장된 메모가 없습니다.');
@@ -1661,9 +1416,8 @@ WML.define({
         const row = h('div', { class: 'wml-gd-slot' });
         const head = h('div', { class: 'wml-gd-slot-head' });
         const line = h('div', { class: 'wml-gd-slot-line' });
-        const displayTitle = file && file.appProperties && file.appProperties.wmlSummary
-          ? file.appProperties.wmlSummary
-          : '저장 슬롯 ' + slot;
+        const savedSummary = file ? formatSlotSummary(file) : '';
+        const displayTitle = '저장 슬롯 ' + slot;
         const titleNode = h('div', { class: 'wml-gd-slot-title' }, displayTitle);
         titleNode.title = displayTitle;
         line.append(titleNode);
@@ -1679,12 +1433,15 @@ WML.define({
           line.append(memoChip);
         }
         head.append(line);
-        head.append(h('div', { class: 'wml-gd-small' }, file ? '저장됨' : '저장된 게임이 없습니다.'));
-        row.append(head);
-        if (file) {
-          const metadata = formatSlotMetadata(file);
-          if (metadata) row.append(h('div', { class: 'wml-gd-summary' }, metadata));
+        if (savedSummary) {
+          const summaryNode = h('div', { class: 'wml-gd-summary' }, savedSummary);
+          summaryNode.title = savedSummary;
+          head.append(summaryNode);
+        } else if (file) {
+          const timestamp = formatSlotMetadata(file);
+          if (timestamp) head.append(h('div', { class: 'wml-gd-slot-timestamp' }, timestamp));
         }
+        row.append(head);
         const actions = h('div', { class: 'wml-gd-actions' });
         actions.append(button(file ? '덮어쓰기' : '저장', () =>
           file ? runAction(() => prepareSaveSlot(slot)) : show({ page: 'save', slot, memo: '' }),
