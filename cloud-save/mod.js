@@ -1001,6 +1001,7 @@ WML.define({
       const firstLine = memo.split(/\r\n|\n|\r/, 1)[0].trim();
       const native = nativeSaveDisplay(snapshot);
       const properties = {
+        wmlDisplayVersion: '2',
         wmlMemoPreview: truncateDriveProperty(firstLine, 100),
         wmlHasMemo: hasMemo ? '1' : '0'
       };
@@ -1424,6 +1425,48 @@ WML.define({
       show({ page: 'home' }, '저장 슬롯 ' + slot + '을 삭제했습니다.');
     }
 
+    function formatSlotSummary(file) {
+      const properties = file && file.appProperties || {};
+      if (properties.wmlDisplayVersion === '2') return String(properties.wmlSummary || '');
+      const parts = [];
+      const add = (label, value) => {
+        if (value !== undefined && value !== null && String(value).trim() !== '') {
+          parts.push(label ? label + ': ' + String(value) : String(value));
+        }
+      };
+      let nativeNow = {};
+      if (properties.wmlNativeNow) {
+        try {
+          const parsed = JSON.parse(properties.wmlNativeNow);
+          if (parsed && typeof parsed === 'object') nativeNow = parsed;
+        } catch (_) {}
+      }
+      add('', properties.wmlNativeName);
+      const day = properties.wmlNativeDay || nativeNow.day;
+      const clock = properties.wmlNativeClock || nativeNow.clock;
+      const place = properties.wmlNativeLocation || nativeNow.place || nativeNow.location;
+      add('일', day);
+      add('시간', clock);
+      add('분', properties.wmlNativeMinute);
+      add('재화', properties.wmlNativeGold || properties.wmlNativeMoney);
+      add('장소', place);
+      add('기력', properties.wmlNativeEnergy);
+      add('상태', properties.wmlNativePhase);
+      add('플레이 초', properties.wmlNativePlaySeconds);
+      add('점수', properties.wmlNativeScore);
+      add('수업', properties.wmlNativeLessons);
+      add('승리', properties.wmlNativeWins);
+      add('패배', properties.wmlNativeLosses);
+      add('연승', properties.wmlNativeStreak);
+      if (parts.length) return parts.slice(0, 5).join(' · ');
+      const legacy = String(properties.wmlSummary || '');
+      return legacy
+        .replace(/진행일:\\s*/g, '일 ')
+        .replace(/(\\d+)\\s*골드/g, '재화 $1')
+        .replace(/(\\d+)\\s*만원/g, '재화 $1')
+        .replace(/(\\d+)\\s*주째/g, '일 $1');
+    }
+
     function formatSlotMetadata(file) {
       const properties = file && file.appProperties || {};
       const nativeTimestamp = Date.parse(String(properties.wmlNativeSavedAt || ''));
@@ -1491,9 +1534,8 @@ WML.define({
         const row = h('div', { class: 'wml-gd-slot' });
         const head = h('div', { class: 'wml-gd-slot-head' });
         const line = h('div', { class: 'wml-gd-slot-line' });
-        const displayTitle = file && file.appProperties && file.appProperties.wmlSummary
-          ? file.appProperties.wmlSummary
-          : '저장 슬롯 ' + slot;
+        const savedSummary = file ? formatSlotSummary(file) : '';
+        const displayTitle = savedSummary || '저장 슬롯 ' + slot;
         const titleNode = h('div', { class: 'wml-gd-slot-title' }, displayTitle);
         titleNode.title = displayTitle;
         line.append(titleNode);
