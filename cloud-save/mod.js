@@ -1461,10 +1461,10 @@ WML.define({
       if (parts.length) return parts.slice(0, 5).join(' · ');
       const legacy = String(properties.wmlSummary || '');
       return legacy
-        .replace(/진행일:\\s*/g, '일 ')
-        .replace(/(\\d+)\\s*골드/g, '재화 $1')
-        .replace(/(\\d+)\\s*만원/g, '재화 $1')
-        .replace(/(\\d+)\\s*주째/g, '일 $1');
+        .replace(/진행일:\s*/g, '일 ')
+        .replace(/(\d+)\s*골드/g, '재화 $1')
+        .replace(/(\d+)\s*만원/g, '재화 $1')
+        .replace(/(\d+)\s*주째/g, '일 $1');
     }
 
     function formatSlotMetadata(file) {
