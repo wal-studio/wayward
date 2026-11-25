@@ -1,18 +1,18 @@
-# Wayward CloudSave — Google Drive (WML / v0.6.2)
+# Wayward CloudSave — Google Drive (WML / v0.6.3)
 
 **대상:** Wayward WML  
-**버전:** 0.6.2
+**버전:** 0.6.3
 
-Google Drive `appDataFolder`에 기존 CloudSave 형식으로 세이브를 저장하는 WML 모드입니다. 0.6.2는 0.6.1의 게임 세이브·암호화·Drive 파일 형식을 유지하면서 인증 재시도, 로그아웃, 목록 메타데이터 조회를 개선합니다.
+Google Drive `appDataFolder`에 기존 CloudSave 형식으로 세이브를 저장하는 WML 모드입니다. 0.6.3은 0.6.2의 게임 세이브·암호화·Drive 파일 형식을 그대로 유지하면서 Android 런처와 정적 인증 페이지의 서로 다른 응답 계약을 하나의 검증된 팝업 경로로 연결합니다.
 
 ## 인증 구성
 
-- **Android 공식 런처:** `WMLHost.startGoogleDriveAuthWithPolicy(nonce, forceSelectAccount)`와 `WMLHost.takePendingStateForNonce(nonce)`를 우선 사용합니다. 48자리 16진수 nonce가 요청과 응답에서 일치해야 연결됩니다.
-- **일반 브라우저:** `https://jeiky224.github.io/cloud/auth-061.html` 전용 정적 페이지에서 Google Identity Services Token Model을 실행합니다. 0.7.x 페이지 소유 세션 브리지와 별개인 0.6.1 일회성 `accessToken` 반환 프로토콜입니다.
+- **Android 공식 런처:** 게임 모드는 사용자 클릭 안에서 `window.open()`을 동기 호출합니다. 런처의 document-start `wayward-google-auth-bridge.js`가 `https://jeiky224.github.io/cloud/auth-061.html` 팝업을 가로채 `WMLHost.startGoogleDriveAuthWithPolicy(nonce, forceSelectAccount)`를 호출하고, nonce가 포함된 네이티브 결과를 팝업의 `MessageEvent`로 반환합니다. CloudSave는 이벤트의 정확한 Origin, popup source, 48자리 nonce, 응답 형식과 토큰을 검증합니다. 모드가 WMLHost 인증 API를 직접 호출하거나 결과를 별도 폴링하지 않습니다.
+- **일반 브라우저:** 같은 `auth-061.html` 정적 페이지에서 Google Identity Services Token Model을 실행합니다. 이 경로는 version 1 ready/hello 핸드셰이크 후 일회성 `accessToken`을 반환합니다. 0.7.x 페이지 소유 세션 브리지와 혼합하지 않습니다.
 - **Drive API:** 게임 페이지가 Google Drive API를 직접 호출합니다. 별도 백엔드, Worker, OAuth Client Secret, Refresh Token 중계는 추가하지 않습니다.
 - **토큰:** access token은 현재 페이지 메모리에만 둡니다. URL, localStorage, sessionStorage, 게임 세이브 및 로그에 저장하지 않습니다.
 
-연결되지 않은 상태의 버튼 문구는 **구글 계정으로 연결**입니다. 로그인 유지 설정 UI는 없습니다. 일반 연결은 가능한 범위에서 기존 Google 브라우저 세션과 승인을 재사용하도록 요청합니다. Android 런처는 이전 연결 성공 기록이 있는 경우 기존 승인 상태 복구를 먼저 시도합니다.
+연결되지 않은 상태의 버튼 문구는 **구글 계정으로 연결**입니다. 로그인 유지 설정 UI는 없습니다. 일반 연결은 가능한 범위에서 기존 Google 브라우저 세션과 승인을 재사용하도록 요청합니다. Android 런처의 기존 승인도 사용자가 **구글 계정으로 연결**을 눌렀을 때 확인하므로, 모드 창을 여는 순간 별도 네이티브 인증 작업을 시작해 사용자 클릭과 경쟁하지 않습니다.
 
 브라우저의 GIS Token Model access token은 장기 로그인 토큰이 아닙니다. 브라우저 세션이 유지되더라도 토큰 만료 후에는 사용자 동작을 통한 새 토큰 발급이 필요할 수 있습니다.
 
