@@ -13,128 +13,70 @@ function section(text, start, end) {
   return text.slice(a, b);
 }
 
-const context = vm.createContext({});
-const summaryHelpers = section(
+// The native serializer envelope is retained as an opaque object. CloudSave
+// must not infer character, currency, relationship, phase, or other labels.
+const snapshotSource = section(source, '    function buildSnapshot()', '    function defaultTitle(state)');
+assert.match(snapshotSource, /nativeSave: native/);
+assert.match(snapshotSource, /native\.format === 1/);
+assert.match(snapshotSource, /state: stateToSave/);
+assert.match(snapshotSource, /modData/);
+
+const displaySource = section(
   source,
-  '    function firstValue(root, patterns) {',
-  '    function applySnapshot(snapshot) {'
+  '    function truncateDriveProperty(value, maxBytes) {',
+  '    function defaultTitle(state) {'
 );
-vm.runInContext(summaryHelpers + '\nthis.__summary = { makeSummary, buildDriveDisplayProperties, nativeSaveDisplay };', context);
+const context = vm.createContext({});
+vm.runInContext(displaySource + '\nthis.__display = { buildDriveDisplayProperties, nativeSaveDisplay };', context);
 
-const savedAt = new Date('2026-11-26T00:26:00+09:00').getTime();
-const sample = {
-  savedAt,
-  state: {
-    day: 12,
-    economy: { gold: 98 },
-    primaryCharacterId: 'hina',
-    characters: { hina: { name: '히나', phase: '하녀 출신' } }
-  },
-  modData: {}
+const nativeSave = {
+  format: 1,
+  savedAt: '2026-11-26T00:26:00+09:00',
+  state: { day: 12, economy: { gold: 98 }, phase: 'prep' },
+  display: '마라 1주째 50골드 집회 준비 플레이 1분 11월 26일 오전 4:24'
 };
-const summary = context.__summary.makeSummary(sample);
-assert.match(summary, /히나/);
-assert.match(summary, /일 12/);
-assert.match(summary, /재화 98/);
-assert.match(summary, /하녀 출신/);
-assert.doesNotMatch(summary, /골드|만원|주째|플레이/);
+const display = context.__display.nativeSaveDisplay({ nativeSave, savedAt: 123 });
+assert.equal(display.savedAt, '2026-11-25T15:26:00.000Z');
+assert.equal(Object.prototype.hasOwnProperty.call(display, 'summary'), false);
 
-const blueblood = context.__summary.nativeSaveDisplay({
-  game: 'blueblood-0.1.7',
-  savedAt,
-  nativeSave: { savedAt: '2026-11-26T00:26:00+09:00', game: { id: 'blueblood-0.1.7' } },
-  state: { now: { day: 8, clock: '08:30', place: '침실' } },
-  modData: {}
-});
-assert.match(blueblood.summary, /일 8/);
-assert.match(blueblood.summary, /시간: 08:30/);
-assert.match(blueblood.summary, /장소: 침실/);
-assert.equal(blueblood.savedAt, '2026-11-25T15:26:00.000Z');
-
-const overtime = context.__summary.nativeSaveDisplay({
-  game: 'overtime-1.6.2',
-  savedAt,
-  state: {
-    day: 14,
-    economy: { gold: 123 },
-    primaryCharacterId: 'wife',
-    characters: { wife: { name: '피파' } },
-    phase: 'service',
-    wfPlaySeconds: 3661
-  },
-  modData: {}
-});
-assert.match(overtime.summary, /피파/);
-assert.match(overtime.summary, /일 14/);
-assert.match(overtime.summary, /재화 123/);
-assert.match(overtime.summary, /상태: service/);
-assert.doesNotMatch(overtime.summary, /만원|주째|집회 중|플레이 1시간/);
-
-const empty = context.__summary.nativeSaveDisplay({ state: {}, modData: {} });
-assert.equal(empty.summary, '', 'unknown or absent save fields must not produce synthetic game information');
-
-const properties = context.__summary.buildDriveDisplayProperties({
-  savedAt,
-  state: { day: 2, player: { name: '주인공' } },
+const properties = context.__display.buildDriveDisplayProperties({
+  nativeSave,
+  savedAt: 123,
   memo: '첫 줄\n둘째 줄은 비공개 본문'
 });
-assert.equal(properties.wmlSummary, '주인공 · 일 2');
-assert.equal(properties.wmlNativeSavedAt, '2026-11-25T15:26:00.000Z');
+assert.equal(properties.wmlDisplayVersion, '3');
+assert.equal(properties.wmlSummary, undefined);
+assert.equal(properties.wmlNativeSavedAt, undefined);
 assert.equal(properties.wmlMemoPreview, '첫 줄');
 assert.equal(properties.wmlHasMemo, '1');
-assert.equal(properties.wmlNativeProfile, undefined);
-assert.equal(properties.wmlNativeCheated, undefined);
+assert.doesNotMatch(JSON.stringify(properties), /재화|관계|상태|prep|골드|마라/);
 assert.doesNotMatch(properties.wmlMemoPreview, /둘째 줄/);
 
-const summaryFormatStart = source.indexOf('    function formatSlotSummary(file) {');
-const summaryFormatEnd = source.indexOf('    function formatSlotMetadata(file) {', summaryFormatStart);
-assert.ok(summaryFormatStart >= 0 && summaryFormatEnd > summaryFormatStart);
-const summaryFormatContext = vm.createContext({});
-vm.runInContext(source.slice(summaryFormatStart, summaryFormatEnd) + '\nthis.formatSlotSummary = formatSlotSummary;', summaryFormatContext);
-assert.equal(summaryFormatContext.formatSlotSummary({
-  appProperties: {
-    wmlNativeProfile: 'blueblood',
-    wmlNativeDay: '8',
-    wmlNativeClock: '08:30',
-    wmlNativeNow: JSON.stringify({ day: 8, clock: '08:30', place: '침실' }),
-    wmlNativeCheated: '1',
-    wmlSummary: '8일 · 08:30'
-  }
-}), '일: 8 · 시간: 08:30 · 장소: 침실');
-assert.equal(summaryFormatContext.formatSlotSummary({
-  appProperties: {
-    wmlNativeProfile: 'overtime',
-    wmlNativeName: '피파',
-    wmlNativeDay: '14',
-    wmlNativeGold: '123',
-    wmlNativePhase: 'service',
-    wmlNativePlaySeconds: '3661'
-  }
-}), '피파 · 일: 14 · 재화: 123 · 상태: service · 플레이 초: 3661');
-assert.equal(summaryFormatContext.formatSlotSummary({
-  appProperties: { wmlDisplayVersion: '2', wmlSummary: '히나 · 일 12 · 재화 98' }
-}), '히나 · 일 12 · 재화 98');
-assert.equal(summaryFormatContext.formatSlotSummary({
-  appProperties: { wmlSummary: '히나 진행일: 12 · 98골드' }
-}), '히나 일 12 · 재화 98');
+// Version 3 intentionally shows no invented card summary. Native time is
+// displayed only when the native serializer supplied it; Drive upload time
+// must not be presented as the game's save time.
+const summaryStart = source.indexOf('    function formatSlotSummary(file) {');
+const summaryEnd = source.indexOf('    function formatSlotMetadata(file) {', summaryStart);
+assert.ok(summaryStart >= 0 && summaryEnd > summaryStart);
+const summaryContext = vm.createContext({});
+vm.runInContext(source.slice(summaryStart, summaryEnd) + '\nthis.formatSlotSummary = formatSlotSummary;', summaryContext);
+assert.equal(summaryContext.formatSlotSummary({
+  appProperties: { wmlDisplayVersion: '3', wmlSummary: 'stale guessed summary' }
+}), '');
 
 const formatStart = source.indexOf('    function formatSlotMetadata(file) {');
 const formatEnd = source.indexOf('    function showMemoPopup(memo) {', formatStart);
 assert.ok(formatStart >= 0 && formatEnd > formatStart);
 const formatContext = vm.createContext({});
 vm.runInContext(source.slice(formatStart, formatEnd) + '\nthis.formatSlotMetadata = formatSlotMetadata;', formatContext);
-const timestamp = formatContext.formatSlotMetadata({
+assert.equal(formatContext.formatSlotMetadata({
   modifiedTime: '2026-11-25T00:00:00.000Z',
-  appProperties: {
-    wmlNativeSavedAt: '2026-11-26T00:26:00.000Z',
-    wmlNativeProfile: 'blueblood',
-    wmlNativeCheated: '1'
-  }
-});
-assert.match(timestamp, /2026/);
-assert.match(timestamp, /11/);
-assert.doesNotMatch(timestamp, /치트|KB|MB/);
-assert.equal(formatContext.formatSlotMetadata({ appProperties: {} }), '');
+  appProperties: { wmlDisplayVersion: '3' }
+}), '');
+assert.match(formatContext.formatSlotMetadata({
+  modifiedTime: '2026-11-25T00:00:00.000Z',
+  appProperties: { wmlDisplayVersion: '3', wmlNativeSavedAt: '2026-11-26T00:26:00.000Z' }
+}), /2026/);
 
 assert.match(source, /wml-gd-slot-timestamp/);
 assert.match(source, /head\.append\(h\('div', \{ class: 'wml-gd-slot-timestamp' \}, timestamp\)\)/);
@@ -142,4 +84,4 @@ assert.doesNotMatch(source, /profile === 'blueblood'|profile === 'overtime'|prof
 assert.match(source, /function writeSlotDisplayMetadata\(slot, snapshot\)/);
 assert.match(source, /await writeSlotDisplayMetadata\(slot, snapshot\)/);
 
-console.log('CloudSave unified save-card metadata tests passed');
+console.log('CloudSave native-envelope and non-inferred display metadata tests passed');
