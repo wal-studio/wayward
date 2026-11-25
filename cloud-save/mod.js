@@ -1423,7 +1423,11 @@ WML.define({
       const parts = [];
       if (Number.isFinite(timestamp)) {
         const date = new Date(timestamp);
-        if (profile === 'blueblood' || profile === 'overtime' || profile === 'hunt') {
+        if (profile === 'overtime') {
+          parts.push(date.toLocaleString(undefined, {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+          }));
+        } else if (profile === 'blueblood' || profile === 'hunt') {
           parts.push(date.toLocaleString());
         } else {
           const hour = date.getHours();
