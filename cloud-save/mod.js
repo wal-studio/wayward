@@ -985,7 +985,9 @@ WML.define({
 
     function nativeSaveProfile(snapshot) {
       const nativeGame = snapshot && snapshot.nativeSave && snapshot.nativeSave.game;
-      const game = String(nativeGame && nativeGame.id || snapshot && snapshot.game || '').toLowerCase();
+      const runtimeGame = typeof api !== 'undefined' && api.game && typeof api.game === 'object' ? api.game : null;
+      const game = String(nativeGame && nativeGame.id || runtimeGame && runtimeGame.id ||
+        snapshot && snapshot.game || globalThis.WML_GAME || '').toLowerCase();
       if (game.includes('blueblood')) return 'blueblood';
       if (game.includes('overtime')) return 'overtime';
       if (game.includes('hunt')) return 'hunt';
@@ -1007,9 +1009,10 @@ WML.define({
         ? snapshot.nativeSave
         : {};
       const nativeGame = native.game && typeof native.game === 'object' ? native.game : {};
+      const runtimeGame = typeof api !== 'undefined' && api.game && typeof api.game === 'object' ? api.game : {};
       const profile = nativeSaveProfile(snapshot);
-      const game = String(nativeGame.id || snapshot && snapshot.game || '');
-      const version = String(nativeGame.version || snapshot && snapshot.gameVersion || '');
+      const game = String(nativeGame.id || runtimeGame.id || snapshot && snapshot.game || globalThis.WML_GAME || '');
+      const version = String(nativeGame.version || runtimeGame.version || snapshot && snapshot.gameVersion || '');
       const savedAtValue = native.savedAt || snapshot && snapshot.savedAt;
       const savedAtDate = typeof savedAtValue === 'string'
         ? new Date(savedAtValue)
