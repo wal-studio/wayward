@@ -36,7 +36,7 @@ assert.doesNotMatch(source, /function attemptNativeSessionRestore\s*\(/,
 assert.doesNotMatch(source, /attemptNativeSessionRestore\s*\(/);
 assert.doesNotMatch(source, /localStorage\.setItem\([^\n]*(?:accessToken|refreshToken)/i);
 assert.doesNotMatch(source, /sessionStorage\.setItem\([^\n]*(?:accessToken|refreshToken)/i);
-assert.doesNotMatch(source, /restore-pending/,
+assert.doesNotMatch(source, /restore-pending|restoring:/,
   'no misleading background restore state remains');
 
 const acceptSource = section(source, '    function acceptAccessToken(payload, nonce) {', '    function requestGoogleToken(forceSelectAccount) {');
