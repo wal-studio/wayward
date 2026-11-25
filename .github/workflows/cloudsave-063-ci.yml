@@ -15,9 +15,11 @@ on:
   pull_request:
     branches:
       - feat/cloudsave-062-auth-ux-performance-20261114
+      - work/cloudsave-native-display-20261126
     paths:
       - 'cloud-save/**'
       - 'scripts/test-cloudsave-063.cjs'
+      - 'scripts/test-cloudsave-display-metadata.cjs'
       - '.github/workflows/cloudsave-063-ci.yml'
 
 permissions:
