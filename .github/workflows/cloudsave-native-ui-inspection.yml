@@ -1,0 +1,68 @@
+name: CloudSave Native UI Source Inspection
+on:
+  push:
+    branches: ['work/cloudsave-native-ui-20261126']
+    paths:
+      - '.github/workflows/cloudsave-native-ui-inspection.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: [self-hosted, Windows, X64, wal-pc]
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Inspect native save UI source in the three original ZIPs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sourceDir = 'D:\Util\stardesk\Download'
+          Add-Type -AssemblyName System.IO.Compression
+          $archives = @(Get-ChildItem -LiteralPath $sourceDir -File -Filter '*.zip' |
+            Where-Object { $_.BaseName -notlike '*.fix' } | Sort-Object Name)
+          if ($archives.Count -ne 3) { throw "Expected 3 original ZIPs; found $($archives.Count)" }
+          foreach ($archive in $archives) {
+            Write-Host "===== ARCHIVE $($archive.Name) ====="
+            $zip = [System.IO.Compression.ZipFile]::OpenRead($archive.FullName)
+            try {
+              foreach ($entry in ($zip.Entries | Sort-Object FullName)) {
+                Write-Host ("ENTRY|{0}|{1}" -f $entry.FullName, $entry.Length)
+              }
+              $htmlEntries = @($zip.Entries | Where-Object {
+                [System.IO.Path]::GetExtension(($_.FullName -replace '\\','/')) -ieq '.html'
+              } | Sort-Object Length -Descending)
+              Write-Host "HTML_ENTRY_COUNT=$($htmlEntries.Count)"
+              foreach ($entry in $htmlEntries) {
+                Write-Host ("===== HTML {0} SIZE {1} =====" -f $entry.FullName, $entry.Length)
+                $stream = $entry.Open()
+                $reader = [System.IO.StreamReader]::new($stream, [System.Text.Encoding]::UTF8, $true, 1048576)
+                try { $html = $reader.ReadToEnd() } finally { $reader.Dispose(); $stream.Dispose() }
+                Write-Host ("HTML_CHARS=$($html.Length)")
+                $patterns = @(
+                  'saveGame','loadGame','saveSlot','saveSlots','saveData','saveState',
+                  'saveTo','loadFrom','localStorage','autosave','saveName','saveTimestamp',
+                  'exportSave','importSave','저장','불러오기','세이브','슬롯'
+                )
+                foreach ($pattern in $patterns) {
+                  $matches = [regex]::Matches($html, [regex]::Escape($pattern), [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+                  if ($matches.Count -eq 0) { continue }
+                  Write-Host ("TERM {0} COUNT {1}" -f $pattern, $matches.Count)
+                  $shown = 0
+                  foreach ($match in $matches) {
+                    $start = [Math]::Max(0, $match.Index - 240)
+                    $length = [Math]::Min(620, $html.Length - $start)
+                    $snippet = $html.Substring($start, $length) -replace '\s+', ' '
+                    Write-Host ("SNIP {0}" -f $snippet)
+                    $shown++
+                    if ($shown -ge 2) { break }
+                  }
+                }
+                $labelPattern = '(?i)["'']([^"'']{1,100}(?:저장|불러오기|세이브|Save|Load|Slot)[^"'']{0,100})["'']'
+                $labels = [regex]::Matches($html, $labelPattern) | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique -First 100
+                foreach ($label in $labels) { Write-Host ("LABEL {0}" -f $label) }
+              }
+            }
+            finally { $zip.Dispose() }
+          }
