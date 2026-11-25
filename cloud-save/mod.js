@@ -704,7 +704,7 @@ WML.define({
       let native = null;
       if (api.has('nativeSaveJSON')) {
         try {
-          const raw = api.fn('nativeSaveJSON')(state, String(apiGame && apiGame.id || api.game || globalThis.WML_GAME || ''));
+          const raw = api.fn('nativeSaveJSON')(state, String(apiGame && apiGame.id || (typeof api.game === 'string' ? api.game : '') || globalThis.WML_GAME || ''));
           native = typeof raw === 'string' ? JSON.parse(raw) : raw;
         } catch (_) {}
       }
@@ -746,7 +746,7 @@ WML.define({
         gameFamily: 'wayward',
         game: gameId,
         gameVersion,
-        nativeFormat: native && (native.format || native.nativeFormat) || 1,
+        nativeFormat: 1,
         nativeSave,
         nativeSaveStateKey: nativeStateKey,
         savedAt: Date.now(),
