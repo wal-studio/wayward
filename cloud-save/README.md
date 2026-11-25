@@ -54,6 +54,7 @@ Google Drive `appDataFolder`에 기존 CloudSave 형식으로 세이브를 저�
 - **Overtime 1.6.2:** 원본 저장 카드의 필드를 그대로 사용합니다. `wifeName · {day}주째 · {gold}만원 · {phase} · 플레이 시간` 형식이며 단계명은 `prep=집회 준비`, `service=집회 중`, `last_call=마감 주문`, `closed=집회 종료`, `bedroom=잠자리`입니다. 저장 시각도 원본의 짧은 월·일·시각 형식으로 표시합니다.
 - **Blueblood 0.1.7:** 원본 H-Engine 저장 봉투는 `format / engine / game / mods / label / clock / savedAt / world / owned` 구조입니다. 세이브별 게임 ID·버전, `world.now`, `clock`, `savedAt`, `world.cheats.used`를 보존하고 치트 표시를 반영합니다. 다만 게임 시간 문자열은 HTML 바깥 H-Engine 달력 포매터(`hp`)를 호출하므로, 현재 WML 모드에서는 그 문자열을 원본과 완전히 동일하게 재생성하지 못하며 원시 시간 필드를 보존합니다.
 - **Hunt 0.3.0:** ZIP에는 본체 HTML이 없고 `Hunt.exe`와 모드 API 선언만 있습니다. `GameState`의 `time / player / scene / modData`를 기준으로 저장별 요약을 만듭니다. 이는 확인 가능한 게임 상태 요약이며, 제공되지 않은 네이티브 저장 화면의 문구·레이아웃을 그대로 복제했다고 간주하지 않습니다.
+- 이 배포물은 WML 모드입니다. Overtime에는 WML 런타임이 포함되어 있어 직접 동작 경로가 있지만, Blueblood의 H-Engine과 Hunt의 독립 실행형 모드 API에서 새 클라우드 세이브를 직접 생성하려면 별도 런타임 어댑터가 필요합니다. 현재 패키지의 Blueblood·Hunt 프로필은 해당 메타데이터가 세이브에 실려 들어온 경우 목록 표시를 담당합니다.
 - 알 수 없는 게임 빌드는 기존 일반 요약으로 폴백합니다. 프로필 판정은 목록을 여는 현재 게임이 아니라 저장 당시 기록된 메타데이터를 사용합니다.
 - 메모 미리보기는 **첫 줄만** 표시합니다. 전체 메모 본문은 계속 암호화된 세이브 스냅샷 안에 보존하며, 목록의 `[메모 내용]`을 누를 때 선택한 슬롯 하나만 다운로드·복호화합니다. 평문 미리보기는 브라우저의 영구 로컬 메타데이터 캐시에 저장하지 않습니다.
 
