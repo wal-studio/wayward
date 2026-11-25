@@ -1068,12 +1068,10 @@ WML.define({
           firstFlag({ state, modData: snapshot && snapshot.modData || {} },
             [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
         const parts = [];
-        const character = activeCharacterName(snapshot);
-        if (character) parts.push(character);
         if (day !== '') parts.push(String(day) + '일');
         if (display.clock) parts.push(display.clock);
-        if (place !== '') parts.push(String(place));
         if (parts.length) display.summary = parts.join(' · ');
+        else if (typeof nowValue === 'string' || typeof nowValue === 'number') display.summary = String(nowValue);
       } else if (profile === 'hunt') {
         const modData = snapshot && snapshot.modData || state.modData || {};
         const queue = [modData];
