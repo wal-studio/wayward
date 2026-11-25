@@ -6,6 +6,7 @@ on:
       - fix/cloudsave-063-native-auth-bridge-20261125
       - fix/cloudsave-save-summary-memo-20261126
       - work/cloudsave-native-display-20261126
+      - work/cloudsave-unified-save-cards-20261126
     paths:
       - 'cloud-save/**'
       - 'scripts/test-cloudsave-063.cjs'
