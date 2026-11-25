@@ -1,0 +1,35 @@
+name: Forensic native save display source scan
+on:
+  pull_request:
+    branches:
+      - work/cloudsave-native-display-20261126
+    paths:
+      - 'Wayward_WML_ko.html'
+      - 'scripts/forensic-native-save-display-scan.cjs'
+      - '.github/workflows/forensic-native-save-display.yml'
+  push:
+    branches:
+      - work/cloudsave-unified-save-cards-20261126
+    paths:
+      - 'Wayward_WML_ko.html'
+      - 'scripts/forensic-native-save-display-scan.cjs'
+      - '.github/workflows/forensic-native-save-display.yml'
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Scan pinned game source
+        run: node scripts/forensic-native-save-display-scan.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-save-display-forensic-scan
+          path: forensic-output/native-save-display-scan.txt
