@@ -148,6 +148,21 @@ assert.equal(hunt.lessons, '5');
 assert.match(hunt.summary, /7일/);
 assert.match(hunt.summary, /82점/);
 assert.match(hunt.summary, /4승 1패/);
+const huntProperties = context.__summary.buildDriveDisplayProperties({
+  game: 'hunt-0.3.0',
+  gameVersion: '0.3.0',
+  savedAt: new Date('2026-11-26T01:00:00Z').getTime(),
+  state: { time: { day: 7, minute: 510 }, player: { name: '주인공', money: 900, energy: 75 }, scene: { location: '교실' } },
+  modData: { 'tutor-chaea': { day: 7, score: 82, lessons: 5, wins: 4, losses: 1, streak: 3 } }
+});
+assert.equal(huntProperties.wmlNativeProfile, 'hunt');
+assert.equal(huntProperties.wmlNativeMinute, '510');
+assert.equal(huntProperties.wmlNativeLocation, '교실');
+assert.equal(huntProperties.wmlNativeMoney, '900');
+assert.equal(huntProperties.wmlNativeEnergy, '75');
+assert.equal(huntProperties.wmlNativeScore, '82');
+assert.equal(huntProperties.wmlNativeWins, '4');
+assert.equal(huntProperties.wmlNativeLosses, '1');
 
 const display = context.__summary.buildDriveDisplayProperties({
   ...sample,
