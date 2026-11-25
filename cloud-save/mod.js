@@ -15,6 +15,30 @@ WML.define({
       "doc": "게임 기본 일시정지 메뉴. 버전에 따라 없어도 모드의 클라우드 창은 사용할 수 있습니다.",
       "optional": true,
       "find": { "all": ["\"support\""], "len": 2849, "any": ["\"save\"", ".returnToTitle", "\"changelog\"", "\"settings\"", "onDone:", "\"load\""] }
+    },
+    "waywardNativeSaveSlotText": {
+      "doc": "Wayward WML 네이티브 저장 목록의 실제 행 메타데이터 렌더러(zoe).",
+      "optional": true,
+      "find": {
+        "all": ["\"진행일: \"", "e.gold??\"?\"", "e.phase??\"\"", "HD(e.savedAt)"],
+        "len": 464
+      }
+    },
+    "faithNativeSaveSlotText": {
+      "doc": "Faith 네이티브 저장 목록의 실제 행 메타데이터 렌더러(VF).",
+      "optional": true,
+      "find": {
+        "all": ["\"손상된 데이터 — 불러올 수 없음\"", "o.day??\"?\"", "prep:\"집회 준비\"", "wfPlayTimeText(o.playSeconds)", "q2(o.savedAt)"],
+        "len": 613
+      }
+    },
+    "faithNativeSaveCharacter": {
+      "doc": "Faith 네이티브 저장 메타데이터와 동일한 주 캐릭터 조회 함수(vn).",
+      "optional": true,
+      "find": {
+        "all": ["s===wfPrisonerId?o.wfPrisoner", "s===wfTavernGuestId?o.wfTavernGuest", "o.characters[s]"],
+        "len": 106
+      }
     }
   },
   async setup(api) {
@@ -80,7 +104,7 @@ WML.define({
         '.wml-gd-slot-line{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;flex:1 1 auto;white-space:nowrap;overflow:hidden}' +
         '.wml-gd-slot-timestamp{flex:0 0 auto;max-width:48%;font-size:.78em;line-height:1.35;text-align:right;white-space:normal;opacity:.68}' +
         '.wml-gd-memo-chip{min-width:0;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;color:inherit;text-align:left;text-decoration:underline;opacity:.78;padding:0;font:inherit;font-size:.9em;cursor:pointer}' +
-        '.wml-gd-summary{font-size:.86em;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+        '.wml-gd-summary{flex:0 0 100%;min-width:0;font-size:.86em;opacity:.82;white-space:normal;overflow-wrap:anywhere}' +
         '.wml-gd-memo-area{box-sizing:border-box;width:100%;min-height:72px;resize:vertical;padding:9px 11px;border:1px solid var(--wml-border,#7778);border-radius:8px;background:var(--wml-panel,#00000010);color:inherit;font:inherit}' +
         '.wml-gd-small{font-size:.82em;opacity:.72}' +
         '.wml-gd-wrap button{max-width:100%}' +
@@ -727,6 +751,8 @@ WML.define({
         ? native.modData
         : (stateToSave.mods && typeof stateToSave.mods === 'object' &&
           !Array.isArray(stateToSave.mods) ? stateToSave.mods : {});
+      const savedAt = Date.now();
+      const nativeDisplay = captureNativeSaveDisplay(stateToSave, native && native.savedAt);
       return {
         schema: 'wayward-cloud-save',
         version: 1,
@@ -734,11 +760,12 @@ WML.define({
         game: String(api.game || ''), // build identifier for diagnostics; not a compatibility gate
         gameVersion,
         nativeFormat: 1,
-        savedAt: Date.now(),
+        savedAt,
         memo: '',
         title: defaultTitle(stateToSave),
         state: stateToSave,
         modData,
+        ...(nativeDisplay ? { nativeDisplay } : {}),
         ...(native && typeof native === 'object' && !Array.isArray(native)
           ? { nativeSave: native }
           : {})
@@ -761,6 +788,59 @@ WML.define({
       }
       return '';
     }
+    function reactElementText(node) {
+      if (node == null || typeof node === 'boolean') return '';
+      if (typeof node === 'string' || typeof node === 'number') return String(node);
+      if (Array.isArray(node)) return node.map(reactElementText).join('');
+      if (typeof node === 'object' && node.props) {
+        return reactElementText(node.props.children);
+      }
+      return '';
+    }
+
+    // Mirror sb()/J0() metadata, then call the exact VF()/zoe() native save-row component.
+    // If a game's native renderer is not resolved, return empty instead of inventing a summary.
+    function captureNativeSaveDisplay(state, nativeSavedAt) {
+      if (!state || typeof state !== 'object') return '';
+      try {
+        let rendererName = '';
+        let characterResolver = null;
+        if (api.has('faithNativeSaveSlotText')) {
+          rendererName = 'faithNativeSaveSlotText';
+          if (api.has('faithNativeSaveCharacter')) {
+            characterResolver = api.fn('faithNativeSaveCharacter');
+          }
+        } else if (api.has('waywardNativeSaveSlotText')) {
+          rendererName = 'waywardNativeSaveSlotText';
+        }
+        if (!rendererName) return '';
+
+        let primaryCharacter = null;
+        if (characterResolver) {
+          try {
+            primaryCharacter = characterResolver(state, state.primaryCharacterId);
+          } catch (_) {}
+        }
+        if (!primaryCharacter && state.characters && typeof state.characters === 'object') {
+          primaryCharacter = state.characters[state.primaryCharacterId] || null;
+        }
+
+        const nativeDate = nativeSavedAt == null ? null : new Date(nativeSavedAt);
+        const meta = {
+          exists: true,
+          day: state.day,
+          gold: state.economy && state.economy.gold,
+          wifeName: primaryCharacter && primaryCharacter.name,
+          phase: state.phase,
+          playSeconds: state.wfPlaySeconds
+        };
+        if (nativeDate && Number.isFinite(nativeDate.getTime())) meta.savedAt = nativeSavedAt;
+        return reactElementText(api.fn(rendererName)({ meta }));
+      } catch (_) {
+        return '';
+      }
+    }
+
     function truncateDriveProperty(value, maxBytes) {
       const source = String(value == null ? '' : value);
       let output = '';
@@ -775,14 +855,53 @@ WML.define({
       return output;
     }
 
+    function splitDriveProperty(value, maxBytes, maxChunks) {
+      const source = String(value == null ? '' : value);
+      if (!source) return [];
+      const chunks = [];
+      let current = '';
+      let bytes = 0;
+      for (const character of source) {
+        const point = character.codePointAt(0);
+        const size = point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
+        if (bytes + size > maxBytes) {
+          if (!current) return [];
+          chunks.push(current);
+          if (chunks.length >= maxChunks) return [];
+          current = '';
+          bytes = 0;
+        }
+        current += character;
+        bytes += size;
+      }
+      if (current) chunks.push(current);
+      return chunks.length <= maxChunks ? chunks : [];
+    }
+
+    function readNativeDisplayProperties(properties) {
+      const count = Number(properties && properties.wmlNativeDisplayCount);
+      if (!Number.isInteger(count) || count < 1 || count > 16) return '';
+      let display = '';
+      for (let index = 0; index < count; index++) {
+        const chunk = properties['wmlNativeDisplay' + index];
+        if (typeof chunk !== 'string' || !chunk) return '';
+        display += chunk;
+      }
+      return display;
+    }
+
     function nativeSaveDisplay(snapshot) {
       const native = snapshot && snapshot.nativeSave &&
         typeof snapshot.nativeSave === 'object' && !Array.isArray(snapshot.nativeSave)
         ? snapshot.nativeSave
         : null;
+      // snapshot.savedAt is CloudSave time; only the native envelope timestamp belongs here.
       const value = native && native.savedAt;
       const date = typeof value === 'string' ? new Date(value) : new Date(Number(value));
       return {
+        display: snapshot && typeof snapshot.nativeDisplay === 'string'
+          ? snapshot.nativeDisplay
+          : '',
         savedAt: value != null && Number.isFinite(date.getTime()) ? date.toISOString() : ''
       };
     }
@@ -792,12 +911,20 @@ WML.define({
       const hasMemo = memo.trim().length > 0;
       const firstLine = memo.split(/\r\n|\n|\r/, 1)[0].trim();
       const native = nativeSaveDisplay(snapshot);
+      const displayChunks = splitDriveProperty(native.display, 124, 16);
+      const hasNativeDisplay = displayChunks.length > 0;
       const properties = {
-        wmlDisplayVersion: '3',
+        wmlDisplayVersion: hasNativeDisplay ? '4' : '3',
         wmlMemoPreview: truncateDriveProperty(firstLine, 100),
         wmlHasMemo: hasMemo ? '1' : '0'
       };
       if (native.savedAt) properties.wmlNativeSavedAt = truncateDriveProperty(native.savedAt, 40);
+      if (hasNativeDisplay) {
+        properties.wmlNativeDisplayCount = String(displayChunks.length);
+        displayChunks.forEach((chunk, index) => {
+          properties['wmlNativeDisplay' + index] = chunk;
+        });
+      }
       return properties;
     }
 
@@ -1217,54 +1344,13 @@ WML.define({
 
     function formatSlotSummary(file) {
       const properties = file && file.appProperties || {};
-      if (properties.wmlDisplayVersion === '3') return '';
-      if (properties.wmlDisplayVersion === '2') return String(properties.wmlSummary || '');
-      const parts = [];
-      const add = (label, value) => {
-        if (value !== undefined && value !== null && String(value).trim() !== '') {
-          parts.push(label ? label + ': ' + String(value) : String(value));
-        }
-      };
-      let nativeNow = {};
-      if (properties.wmlNativeNow) {
-        try {
-          const parsed = JSON.parse(properties.wmlNativeNow);
-          if (parsed && typeof parsed === 'object') nativeNow = parsed;
-        } catch (_) {}
-      }
-      add('', properties.wmlNativeName);
-      const day = properties.wmlNativeDay || nativeNow.day;
-      const clock = properties.wmlNativeClock || nativeNow.clock;
-      const place = properties.wmlNativeLocation || nativeNow.place || nativeNow.location;
-      add('일', day);
-      add('시간', clock);
-      add('분', properties.wmlNativeMinute);
-      add('재화', properties.wmlNativeGold || properties.wmlNativeMoney);
-      add('장소', place);
-      add('기력', properties.wmlNativeEnergy);
-      add('상태', properties.wmlNativePhase);
-      add('플레이 초', properties.wmlNativePlaySeconds);
-      add('점수', properties.wmlNativeScore);
-      add('수업', properties.wmlNativeLessons);
-      add('승리', properties.wmlNativeWins);
-      add('패배', properties.wmlNativeLosses);
-      add('연승', properties.wmlNativeStreak);
-      if (parts.length) return parts.slice(0, 5).join(' · ');
-      const legacy = String(properties.wmlSummary || '');
-      return legacy
-        .replace(/진행일:\s*/g, '일 ')
-        .replace(/(\d+)\s*골드/g, '재화 $1')
-        .replace(/(\d+)\s*만원/g, '재화 $1')
-        .replace(/(\d+)\s*주째/g, '일 $1');
+      if (properties.wmlDisplayVersion !== '4') return '';
+      return readNativeDisplayProperties(properties);
     }
 
     function formatSlotMetadata(file) {
       const properties = file && file.appProperties || {};
-      const nativeTimestamp = Date.parse(String(properties.wmlNativeSavedAt || ''));
-      const fallbackTimestamp = properties.wmlDisplayVersion === '3'
-        ? NaN
-        : Date.parse(String(file && file.modifiedTime || ''));
-      const timestamp = Number.isFinite(nativeTimestamp) ? nativeTimestamp : fallbackTimestamp;
+      const timestamp = Date.parse(String(properties.wmlNativeSavedAt || ''));
       if (!Number.isFinite(timestamp)) return '';
       return new Date(timestamp).toLocaleString(undefined, {
         year: 'numeric',
@@ -1301,8 +1387,11 @@ WML.define({
         const snapshot = await globalThis.WMLGoogleDriveCrypto.decryptSnapshotEmbedded(envelope);
         const match = String(file && file.name || '').match(/([1-9][0-9]*)\.json$/);
         const slot = match ? Number(match[1]) : 0;
-        if (slot && (!file.appProperties || !file.appProperties.wmlSummary ||
-            file.appProperties.wmlHasMemo === undefined)) {
+        const appProperties = file && file.appProperties || {};
+        const nativeSummary = formatSlotSummary(file);
+        if (slot && (!['3', '4'].includes(String(appProperties.wmlDisplayVersion || '')) ||
+            appProperties.wmlHasMemo === undefined ||
+            (appProperties.wmlDisplayVersion === '4' && !nativeSummary))) {
           try { await writeSlotDisplayMetadata(slot, snapshot); } catch (_) {}
         }
         showMemoPopup(String(snapshot.memo || '') || '저장된 메모가 없습니다.');
@@ -1328,7 +1417,7 @@ WML.define({
         const head = h('div', { class: 'wml-gd-slot-head' });
         const line = h('div', { class: 'wml-gd-slot-line' });
         const savedSummary = file ? formatSlotSummary(file) : '';
-        const displayTitle = savedSummary || '저장 슬롯 ' + slot;
+        const displayTitle = '저장 슬롯 ' + slot;
         const titleNode = h('div', { class: 'wml-gd-slot-title' }, displayTitle);
         titleNode.title = displayTitle;
         line.append(titleNode);
@@ -1344,7 +1433,11 @@ WML.define({
           line.append(memoChip);
         }
         head.append(line);
-        if (file) {
+        if (savedSummary) {
+          const summaryNode = h('div', { class: 'wml-gd-summary' }, savedSummary);
+          summaryNode.title = savedSummary;
+          head.append(summaryNode);
+        } else if (file) {
           const timestamp = formatSlotMetadata(file);
           if (timestamp) head.append(h('div', { class: 'wml-gd-slot-timestamp' }, timestamp));
         }
