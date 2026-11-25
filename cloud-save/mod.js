@@ -780,15 +780,15 @@ WML.define({
       const queue = [{ value: roots, path: [], depth: 0 }];
       const seen = new Set();
       const output = [];
-      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|place|clock|time|minute|skill)/i;
-      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash|role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i;
+      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|place|clock|time|minute|skill|phase|status|occupation|job|origin|background|class|profession|identity|role|energy)/i;
+      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i;
       const labels = [
         [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
         [/rank/i, '등급'], [/reputation/i, '평판'],
         [/relationship|affection|trust/i, '관계'], [/quest/i, '퀘스트'],
         [/floor/i, '층'], [/progress/i, '진행'], [/turn/i, '턴'],
         [/debt/i, '부채'], [/score/i, '점수'], [/experience|xp/i, '경험치'],
-        [/location|region|place/i, '장소'], [/clock|time|minute/i, '시간'], [/skill/i, '기술']
+        [/location|region|place/i, '장소'], [/minute/i, '분'], [/clock|time/i, '시간'], [/phase|status/i, '상태'], [/occupation|job|profession|role/i, '역할'], [/origin|background|identity/i, '배경'], [/class/i, '분류'], [/energy/i, '기력'], [/skill/i, '기술']
       ];
       let visited = 0;
       while (queue.length && visited < 2500 && output.length < 12) {
