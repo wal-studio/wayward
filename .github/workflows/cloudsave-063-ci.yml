@@ -10,7 +10,6 @@ on:
       - 'cloud-save/**'
       - 'scripts/test-cloudsave-063.cjs'
       - 'scripts/test-cloudsave-display-metadata.cjs'
-      - 'scripts/forensic-native-save-display-scan.cjs'
       - '.github/workflows/cloudsave-063-ci.yml'
   pull_request:
     branches:
