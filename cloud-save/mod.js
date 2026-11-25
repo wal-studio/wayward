@@ -841,6 +841,23 @@ WML.define({
       return 'wayward';
     }
 
+    function firstFlag(root, patterns) {
+      const seen = new Set(), queue = [{ value: root, depth: 0 }];
+      while (queue.length) {
+        const item = queue.shift();
+        if (!item.value || typeof item.value !== 'object' || seen.has(item.value) || item.depth > 5) continue;
+        seen.add(item.value);
+        for (const [key, value] of Object.entries(item.value)) {
+          if (patterns.some(pattern => pattern.test(key)) &&
+              (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string')) {
+            return value === true || value === 1 || /^(true|1|yes)$/i.test(String(value));
+          }
+          if (value && typeof value === 'object') queue.push({ value, depth: item.depth + 1 });
+        }
+      }
+      return false;
+    }
+
     function nativePlayTimeText(value) {
       const minutes = Math.floor((Number(value) || 0) / 60);
       const hours = Math.floor(minutes / 60);
@@ -886,13 +903,11 @@ WML.define({
         const day = firstValue({ state: now }, [/^(day|currentDay|daysPassed)$/i]);
         const clock = firstValue({ state: now }, [/^(clock|time|currentTime)$/i]);
         const place = firstValue({ state: now }, [/^(place|location|region)$/i]);
-        const cheated = firstValue({ state, modData: snapshot && snapshot.modData || {} },
-          [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
         display.day = day === '' ? '' : String(day);
         display.clock = clock === '' ? '' : String(clock);
         display.place = place === '' ? '' : String(place);
-        display.cheated = cheated === true || cheated === 1 ||
-          /^(true|1|yes)$/i.test(String(cheated));
+        display.cheated = firstFlag({ state, modData: snapshot && snapshot.modData || {} },
+          [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
         const parts = [];
         const character = activeCharacterName(snapshot);
         if (character) parts.push(character);
@@ -1388,20 +1403,31 @@ WML.define({
     }
 
     function formatSlotMetadata(file) {
+      const properties = file && file.appProperties || {};
+      const profile = String(properties.wmlNativeProfile || '');
+      const nativeTimestamp = Date.parse(String(properties.wmlNativeSavedAt || ''));
+      const fallbackTimestamp = Date.parse(String(file && file.modifiedTime || ''));
+      const timestamp = Number.isFinite(nativeTimestamp) ? nativeTimestamp : fallbackTimestamp;
       const parts = [];
-      const timestamp = Date.parse(String(file && file.modifiedTime || ''));
       if (Number.isFinite(timestamp)) {
         const date = new Date(timestamp);
-        const hour = date.getHours();
-        const clock = (hour % 12 || 12) + ':' + String(date.getMinutes()).padStart(2, '0');
-        parts.push((date.getMonth() + 1) + '월 ' + date.getDate() + '일 ' +
-          (hour < 12 ? '오전 ' : '오후 ') + clock);
+        if (profile === 'blueblood' || profile === 'overtime' || profile === 'hunt') {
+          parts.push(date.toLocaleString());
+        } else {
+          const hour = date.getHours();
+          const clock = (hour % 12 || 12) + ':' + String(date.getMinutes()).padStart(2, '0');
+          parts.push((date.getMonth() + 1) + '월 ' + date.getDate() + '일 ' +
+            (hour < 12 ? '오전 ' : '오후 ') + clock);
+        }
       }
-      const size = Number(file && file.size) || 0;
-      if (size > 0) {
-        parts.push(size < 1024 * 1024
-          ? Math.max(1, Math.round(size / 1024)) + ' KB'
-          : (size / (1024 * 1024)).toFixed(1) + ' MB');
+      if (profile === 'blueblood' && properties.wmlNativeCheated === '1') parts.push('치트');
+      if (profile !== 'blueblood' && profile !== 'overtime' && profile !== 'hunt') {
+        const size = Number(file && file.size) || 0;
+        if (size > 0) {
+          parts.push(size < 1024 * 1024
+            ? Math.max(1, Math.round(size / 1024)) + ' KB'
+            : (size / (1024 * 1024)).toFixed(1) + ' MB');
+        }
       }
       return parts.join(' · ');
     }
