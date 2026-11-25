@@ -99,7 +99,7 @@ assert.equal(blueblood.day, '8');
 assert.equal(blueblood.clock, '08:30');
 assert.equal(blueblood.place, '침실');
 assert.equal(blueblood.cheated, true);
-assert.equal(blueblood.now, '');
+assert.equal(blueblood.now, JSON.stringify({ day: 8, clock: '08:30', place: '침실' }));
 assert.match(blueblood.summary, /08:30/);
 assert.match(blueblood.summary, /침실/);
 
