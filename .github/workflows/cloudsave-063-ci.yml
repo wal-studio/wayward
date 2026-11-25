@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - fix/cloudsave-063-native-auth-bridge-20261125
+      - fix/cloudsave-save-summary-memo-20261126
     paths:
       - 'cloud-save/**'
       - 'scripts/test-cloudsave-063.cjs'
+      - 'scripts/test-cloudsave-display-metadata.cjs'
       - '.github/workflows/cloudsave-063-ci.yml'
   pull_request:
     branches:
@@ -35,8 +37,11 @@ jobs:
           node --check cloud-save/mod.js
           node --check cloud-save/crypto.js
           node --check scripts/test-cloudsave-063.cjs
+          node --check scripts/test-cloudsave-display-metadata.cjs
       - name: Verify native and browser authentication contracts
         run: node scripts/test-cloudsave-063.cjs
+      - name: Verify dynamic save summaries and memo UI
+        run: node scripts/test-cloudsave-display-metadata.cjs
       - name: Verify diff and package
         run: |
           git diff --check e58c18c28e8ecf3daed809e3c8aee95e66a32c07...HEAD
