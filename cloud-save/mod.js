@@ -891,14 +891,22 @@ WML.define({
         display.name = character;
         display.phase = phase == null ? '' : String(phase);
         display.playSeconds = playSeconds == null ? '' : String(playSeconds);
+        const phaseLabels = {
+          prep: '집회 준비',
+          service: '집회 중',
+          last_call: '마감 주문',
+          closed: '집회 종료',
+          bedroom: '잠자리'
+        };
+        const phaseLabel = phaseLabels[String(phase || '')] || String(phase || '');
         const parts = [];
         if (character) parts.push(character);
-        if (day != null && day !== '') parts.push(String(day) + '일차');
-        if (gold != null && gold !== '') parts.push(String(gold) + '골드');
-        if (phase) parts.push(String(phase));
+        parts.push((day == null || day === '' ? '?' : String(day)) + '주째');
+        parts.push((gold == null || gold === '' ? '?' : String(gold)) + '만원');
+        if (phaseLabel) parts.push(phaseLabel);
         const playTime = nativePlayTimeText(playSeconds);
         if (playTime) parts.push(playTime);
-        display.summary = parts.join(' · ') || display.summary;
+        display.summary = parts.join(' · ');
       } else if (profile === 'blueblood') {
         const now = state.now && typeof state.now === 'object' ? state.now : state;
         const day = firstValue({ state: now }, [/^(day|currentDay|daysPassed)$/i]);
@@ -907,8 +915,10 @@ WML.define({
         display.day = day === '' ? '' : String(day);
         display.clock = clock === '' ? '' : String(clock);
         display.place = place === '' ? '' : String(place);
-        display.cheated = firstFlag({ state, modData: snapshot && snapshot.modData || {} },
-          [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
+        display.now = state.now == null ? '' : String(state.now);
+        display.cheated = !!(state.cheats && Array.isArray(state.cheats.used) && state.cheats.used.length) ||
+          firstFlag({ state, modData: snapshot && snapshot.modData || {} },
+            [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
         const parts = [];
         const character = activeCharacterName(snapshot);
         if (character) parts.push(character);
@@ -979,6 +989,7 @@ WML.define({
         wmlNativeGame: property(native.game, 80),
         wmlNativeVersion: property(native.version, 80),
         wmlNativeSavedAt: property(native.savedAt, 40),
+        wmlNativeNow: property(native.now),
         wmlNativeDay: property(native.day),
         wmlNativeGold: property(native.gold),
         wmlNativeName: property(native.name),
