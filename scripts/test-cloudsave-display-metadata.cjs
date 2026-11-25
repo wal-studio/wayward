@@ -66,7 +66,7 @@ const overtime = context.__summary.nativeSaveDisplay({
     economy: { gold: 123 },
     primaryCharacterId: 'wife',
     characters: { wife: { name: '피파' } },
-    phase: '저녁',
+    phase: 'service',
     wfPlaySeconds: 3661
   },
   modData: {}
@@ -75,11 +75,12 @@ assert.equal(overtime.profile, 'overtime');
 assert.equal(overtime.day, '14');
 assert.equal(overtime.gold, '123');
 assert.equal(overtime.name, '피파');
-assert.equal(overtime.phase, '저녁');
+assert.equal(overtime.phase, 'service');
 assert.equal(overtime.playSeconds, '3661');
 assert.match(overtime.summary, /피파/);
-assert.match(overtime.summary, /14일차/);
-assert.match(overtime.summary, /123골드/);
+assert.match(overtime.summary, /14주째/);
+assert.match(overtime.summary, /123만원/);
+assert.match(overtime.summary, /집회 중/);
 assert.match(overtime.summary, /플레이 1시간 1분/);
 
 const blueblood = context.__summary.nativeSaveDisplay({
@@ -98,6 +99,7 @@ assert.equal(blueblood.day, '8');
 assert.equal(blueblood.clock, '08:30');
 assert.equal(blueblood.place, '침실');
 assert.equal(blueblood.cheated, true);
+assert.equal(blueblood.now, '');
 assert.match(blueblood.summary, /08:30/);
 assert.match(blueblood.summary, /침실/);
 
