@@ -700,6 +700,7 @@ WML.define({
 
     function buildSnapshot() {
       const state = api.store.game();
+      const gameId = String(api.game || globalThis.WML_GAME || '');
       if (!state || typeof state !== 'object' || Array.isArray(state)) {
         throw new Error('게임이 시작된 뒤에 저장할 수 있습니다.');
       }
@@ -710,7 +711,7 @@ WML.define({
       let native = null;
       if (api.has('nativeSaveJSON')) {
         try {
-          native = JSON.parse(api.fn('nativeSaveJSON')(state, String(api.game || '')));
+          native = JSON.parse(api.fn('nativeSaveJSON')(state, gameId));
         } catch (_) {
           native = null;
         }
@@ -721,7 +722,7 @@ WML.define({
         : JSON.parse(JSON.stringify(state));
       const gameVersion = native && native.gameVersion != null
         ? String(native.gameVersion)
-        : String(api.game || '');
+        : gameId;
       const modData = native && native.modData && typeof native.modData === 'object'
         ? native.modData
         : (stateToSave.mods && typeof stateToSave.mods === 'object' &&
@@ -730,7 +731,7 @@ WML.define({
         schema: 'wayward-cloud-save',
         version: 1,
         gameFamily: 'wayward',
-        game: String(api.game || ''), // build identifier for diagnostics; not a compatibility gate
+        game: gameId, // exact per-save game build identifier; not a compatibility gate
         gameVersion,
         nativeFormat: 1,
         savedAt: Date.now(),
