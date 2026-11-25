@@ -76,7 +76,7 @@ WML.define({
         '.wml-gd-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}' +
         '.wml-gd-slot{display:flex;flex-direction:column;gap:8px;padding:11px;border:1px solid var(--wml-border,#7778);border-radius:9px}' +
         '.wml-gd-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}' +
-        '.wml-gd-slot-title{font-weight:600;overflow-wrap:anywhere;min-width:0}' +
+        '.wml-gd-slot-title{font-weight:600;overflow-wrap:anywhere;min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}' +
         '.wml-gd-slot-line{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden}' +
         '.wml-gd-memo-chip{min-width:0;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;color:inherit;text-align:left;text-decoration:underline;opacity:.78;padding:0;font:inherit;font-size:.9em;cursor:pointer}' +
         '.wml-gd-summary{font-size:.86em;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
@@ -397,6 +397,17 @@ WML.define({
       }
     }
 
+    function normalizeAppProperties(value, includeMemoPreview) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+      const output = {};
+      for (const [key, item] of Object.entries(value).slice(0, 100)) {
+        if (typeof item !== 'string' || key.length > 124) continue;
+        if (includeMemoPreview === false && key === 'wmlMemoPreview') continue;
+        output[key] = item.slice(0, 512);
+      }
+      return output;
+    }
+
     function normalizeDriveSlotFiles(files) {
       const slots = new Map();
       for (const file of (Array.isArray(files) ? files : [])) {
@@ -412,7 +423,8 @@ WML.define({
             name: String(file.name),
             mimeType: String(file.mimeType || 'application/json'),
             modifiedTime: String(file.modifiedTime || ''),
-            size: Math.max(0, Number(file.size) || 0)
+            size: Math.max(0, Number(file.size) || 0),
+            appProperties: normalizeAppProperties(file.appProperties, true)
           });
         }
       }
@@ -433,7 +445,8 @@ WML.define({
           name: item.name,
           modifiedTime: String(item.modifiedTime || ''),
           size: Math.max(0, Number(item.size) || 0),
-          mimeType: String(item.mimeType || 'application/json')
+          mimeType: String(item.mimeType || 'application/json'),
+          appProperties: normalizeAppProperties(item.appProperties, false)
         });
       }
       return output;
@@ -538,7 +551,7 @@ WML.define({
                 spaces: 'appDataFolder',
                 pageSize: '1000',
                 q: "trashed = false and name contains '" + FILE_PREFIX + "'",
-                fields: 'files(id,name,mimeType,modifiedTime,size),nextPageToken'
+                fields: 'files(id,name,mimeType,modifiedTime,size,appProperties),nextPageToken'
               });
               if (pageToken) params.set('pageToken', pageToken);
               apiCalls += 1;
@@ -678,6 +691,28 @@ WML.define({
       await refreshSlots();
     }
 
+    async function writeSlotDisplayMetadata(slot, snapshot) {
+      const file = currentFile(slot);
+      if (!file) throw new Error('저장 파일의 표시 정보를 연결하지 못했습니다.');
+      const appProperties = Object.assign(
+        {},
+        file.appProperties || {},
+        buildDriveDisplayProperties(snapshot)
+      );
+      await driveFetch('/drive/v3/files/' + encodeURIComponent(file.id), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+        body: JSON.stringify({ appProperties })
+      });
+      const updated = Object.assign({}, file, { appProperties });
+      driveSlots = driveSlots.map(item => item.id === file.id ? updated : item);
+      const cacheKey = driveAccountCacheIdentity || {
+        memoryKey: driveAccountMemoryKey, storageKey: ''
+      };
+      writeAccountSlotCache(cacheKey, driveSlots);
+      if (isConnected()) render();
+    }
+
     async function deleteSlot(slot) {
       const file = currentFile(slot);
       if (!file) throw new Error('삭제할 저장 파일을 찾지 못했습니다.');
@@ -739,19 +774,108 @@ WML.define({
       }
       return '';
     }
+    function activeCharacterName(snapshot) {
+      const state = snapshot && snapshot.state || {};
+      const characters = state.characters;
+      const primaryId = state.primaryCharacterId;
+      let active = characters && primaryId != null ? characters[String(primaryId)] : null;
+      if (!active && characters && typeof characters === 'object') {
+        active = Object.values(characters).find(value => value && typeof value === 'object' &&
+          (value.isPrimary === true || value.isMain === true || value.primary === true)) || null;
+      }
+      for (const candidate of [active, state.player, state.character, state.wife]) {
+        const name = firstValue(candidate, [/^(name|displayName|characterName|playerName|wifeName|girlName)$/i]);
+        if (name !== '') return name;
+      }
+      return firstValue({
+        state,
+        modData: snapshot && snapshot.modData || {}
+      }, [/^(characterName|playerName|protagonistName|heroName|mainCharacterName|girlName|wifeName)$/i]);
+    }
+
+    function collectSummaryExtras(snapshot) {
+      const roots = {
+        state: snapshot && snapshot.state || {},
+        modData: snapshot && snapshot.modData || {}
+      };
+      const queue = [{ value: roots, path: [], depth: 0 }];
+      const seen = new Set();
+      const output = [];
+      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|skill)/i;
+      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash|role|occupation|job|origin|background|statusName|className|socialClass|characterRole|profession|identity)$/i;
+      const labels = [
+        [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
+        [/rank/i, '등급'], [/reputation/i, '평판'],
+        [/relationship|affection|trust/i, '관계'], [/quest/i, '퀘스트'],
+        [/floor/i, '층'], [/progress/i, '진행'], [/turn/i, '턴'],
+        [/debt/i, '부채'], [/score/i, '점수'], [/experience|xp/i, '경험치'],
+        [/location|region/i, '장소'], [/skill/i, '기술']
+      ];
+      let visited = 0;
+      while (queue.length && visited < 2500 && output.length < 12) {
+        const item = queue.shift();
+        const value = item.value;
+        if (!value || typeof value !== 'object' || seen.has(value) || item.depth > 8) continue;
+        seen.add(value);
+        for (const [key, child] of Object.entries(value)) {
+          visited += 1;
+          const path = item.path.concat(key);
+          if ((typeof child === 'string' || typeof child === 'number') &&
+              interesting.test(key) && !excluded.test(key)) {
+            const text = String(child).trim();
+            if (text && text.length <= 48 && !output.some(entry => entry.value === text)) {
+              const label = (labels.find(([pattern]) => pattern.test(key)) || [null, key])[1];
+              output.push({ label, value: text, path: path.join('.') });
+            }
+          } else if (child && typeof child === 'object' && item.depth < 8) {
+            queue.push({ value: child, path, depth: item.depth + 1 });
+          }
+        }
+      }
+      return output;
+    }
+
     function makeSummary(snapshot) {
       const state = snapshot && snapshot.state || {};
-      const day = firstValue(state, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
-      const gold = firstValue(state, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
-      const role = firstValue(state, [/^(role|occupation|job|origin|background|statusName|className|socialClass|characterRole)$/i]);
-      const character = firstValue(state, [/^(characterName|playerName|protagonistName|heroName|mainCharacterName|girlName)$/i]);
+      const roots = { state, modData: snapshot && snapshot.modData || {} };
+      const day = firstValue(roots, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
+      const gold = firstValue(roots, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
+      const role = firstValue(roots, [/^(role|occupation|job|origin|background|statusName|className|socialClass|characterRole|profession|identity)$/i]);
+      const character = activeCharacterName(snapshot);
       const parts = [];
-      if (character) parts.push(String(character) + ' 진행일:'); else if (day !== '') parts.push('진행일:');
-      if (day !== '') parts.push(String(day) + '일');
+      if (character && day !== '') parts.push(String(character) + ' 진행일: ' + String(day));
+      else if (character) parts.push(String(character));
+      else if (day !== '') parts.push('진행일: ' + String(day));
       if (gold !== '') parts.push(String(gold) + '골드');
-      if (role) parts.push(String(role));
-      parts.push(new Date(Number(snapshot.savedAt) || Date.now()).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }));
-      return parts.join(' · ');
+      if (role !== '') parts.push(String(role));
+      for (const extra of collectSummaryExtras(snapshot)) {
+        if (parts.length >= 5) break;
+        parts.push(extra.label + ': ' + extra.value);
+      }
+      return parts.join(' · ') || defaultTitle(state);
+    }
+
+    function truncateDriveProperty(value, maxBytes) {
+      const source = String(value == null ? '' : value);
+      let output = '';
+      let bytes = 0;
+      for (const character of source) {
+        const point = character.codePointAt(0);
+        const size = point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
+        if (bytes + size > maxBytes) break;
+        output += character;
+        bytes += size;
+      }
+      return output;
+    }
+
+    function buildDriveDisplayProperties(snapshot) {
+      const memo = String(snapshot && snapshot.memo || '').trim();
+      return {
+        wmlSummary: truncateDriveProperty(makeSummary(snapshot), 120),
+        wmlMemoPreview: truncateDriveProperty(memo.replace(/\s+/g, ' '), 100),
+        wmlHasMemo: memo ? '1' : '0'
+      };
     }
     function defaultTitle(state) {
       const day = Number(state && state.day);
@@ -1085,8 +1209,11 @@ WML.define({
       snapshot.memo = String(fields.memo && fields.memo.value || '').trim();
       const envelope = await globalThis.WMLGoogleDriveCrypto.encryptSnapshotEmbedded(snapshot);
       await writeSlotEnvelope(slot, envelope);
+      let metadataNotice = '';
+      try { await writeSlotDisplayMetadata(slot, snapshot); }
+      catch (_) { metadataNotice = ' 저장 정보 표시는 다음 동기화 때 갱신됩니다.'; }
       preparedSlotRead = null;
-      show({ page: 'home' }, '저장 슬롯 ' + slot + '에 자동 암호화하여 저장했습니다.');
+      show({ page: 'home' }, '저장 슬롯 ' + slot + '에 자동 암호화하여 저장했습니다.' + metadataNotice);
     }
 
     async function prepareSaveSlot(slot) {
@@ -1131,6 +1258,7 @@ WML.define({
         if (!passphrase) throw new Error('이전 세이브의 암호화 비밀번호를 입력해 주세요.');
         snapshot = await globalThis.WMLGoogleDriveCrypto.decryptSnapshot(envelope, passphrase);
         await writeSlotEnvelope(slot, await globalThis.WMLGoogleDriveCrypto.encryptSnapshotEmbedded(snapshot));
+        try { await writeSlotDisplayMetadata(slot, snapshot); } catch (_) {}
       }
       applySnapshot(snapshot); if (win) win.close(); message = '';
     }
@@ -1177,6 +1305,22 @@ WML.define({
       else { overlay.setAttribute('open', ''); }
     }
 
+    async function openMemoForSlot(file) {
+      const envelope = await readSlotEnvelope(file);
+      if (envelope && envelope.keyMode === 'embedded-addon-v2') {
+        const snapshot = await globalThis.WMLGoogleDriveCrypto.decryptSnapshotEmbedded(envelope);
+        const match = String(file && file.name || '').match(/([1-9][0-9]*)\.json$/);
+        const slot = match ? Number(match[1]) : 0;
+        if (slot && (!file.appProperties || !file.appProperties.wmlSummary ||
+            file.appProperties.wmlHasMemo === undefined)) {
+          try { await writeSlotDisplayMetadata(slot, snapshot); } catch (_) {}
+        }
+        showMemoPopup(String(snapshot.memo || '') || '저장된 메모가 없습니다.');
+        return;
+      }
+      showMemoPopup('이전 암호화 형식의 세이브입니다. 저장 당시 암호화 비밀번호로 불러온 뒤 메모를 확인할 수 있습니다.');
+    }
+
     function renderSlots(root) {
       addTitle(root, 'Google Drive 저장 슬롯');
       const bySlot = new Map(driveSlots.map(file => [
@@ -1193,7 +1337,23 @@ WML.define({
         const row = h('div', { class: 'wml-gd-slot' });
         const head = h('div', { class: 'wml-gd-slot-head' });
         const line = h('div', { class: 'wml-gd-slot-line' });
-        line.append(h('div', { class: 'wml-gd-slot-title' }, '저장 슬롯 ' + slot));
+        const displayTitle = file && file.appProperties && file.appProperties.wmlSummary
+          ? file.appProperties.wmlSummary
+          : '저장 슬롯 ' + slot;
+        const titleNode = h('div', { class: 'wml-gd-slot-title' }, displayTitle);
+        titleNode.title = displayTitle;
+        line.append(titleNode);
+        if (file && (!file.appProperties || file.appProperties.wmlHasMemo !== '0')) {
+          const memoPreview = String(file.appProperties && file.appProperties.wmlMemoPreview || '');
+          const memoChip = document.createElement('button');
+          memoChip.type = 'button';
+          memoChip.className = 'wml-gd-memo-chip';
+          memoChip.textContent = '[' + (memoPreview || '메모 보기') + ']';
+          memoChip.title = '전체 메모 보기';
+          memoChip.setAttribute('aria-label', '세이브 메모 전체 보기');
+          memoChip.addEventListener('click', () => runAction(() => openMemoForSlot(file)));
+          line.append(memoChip);
+        }
         head.append(line);
         head.append(h('div', { class: 'wml-gd-small' }, file ? '저장됨' : '저장된 게임이 없습니다.'));
         row.append(head);
