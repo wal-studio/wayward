@@ -86,6 +86,38 @@ assert.equal(properties.wmlNativeProfile, undefined);
 assert.equal(properties.wmlNativeCheated, undefined);
 assert.doesNotMatch(properties.wmlMemoPreview, /둘째 줄/);
 
+const summaryFormatStart = source.indexOf('    function formatSlotSummary(file) {');
+const summaryFormatEnd = source.indexOf('    function formatSlotMetadata(file) {', summaryFormatStart);
+assert.ok(summaryFormatStart >= 0 && summaryFormatEnd > summaryFormatStart);
+const summaryFormatContext = vm.createContext({});
+vm.runInContext(source.slice(summaryFormatStart, summaryFormatEnd) + '\\nthis.formatSlotSummary = formatSlotSummary;', summaryFormatContext);
+assert.equal(summaryFormatContext.formatSlotSummary({
+  appProperties: {
+    wmlNativeProfile: 'blueblood',
+    wmlNativeDay: '8',
+    wmlNativeClock: '08:30',
+    wmlNativeNow: JSON.stringify({ day: 8, clock: '08:30', place: '침실' }),
+    wmlNativeCheated: '1',
+    wmlSummary: '8일 · 08:30'
+  }
+}), '일: 8 · 시간: 08:30 · 장소: 침실');
+assert.equal(summaryFormatContext.formatSlotSummary({
+  appProperties: {
+    wmlNativeProfile: 'overtime',
+    wmlNativeName: '피파',
+    wmlNativeDay: '14',
+    wmlNativeGold: '123',
+    wmlNativePhase: 'service',
+    wmlNativePlaySeconds: '3661'
+  }
+}), '피파 · 일: 14 · 재화: 123 · 상태: service · 플레이 초: 3661');
+assert.equal(summaryFormatContext.formatSlotSummary({
+  appProperties: { wmlDisplayVersion: '2', wmlSummary: '히나 · 일 12 · 재화 98' }
+}), '히나 · 일 12 · 재화 98');
+assert.equal(summaryFormatContext.formatSlotSummary({
+  appProperties: { wmlSummary: '히나 진행일: 12 · 98골드' }
+}), '히나 일 12 · 재화 98');
+
 const formatStart = source.indexOf('    function formatSlotMetadata(file) {');
 const formatEnd = source.indexOf('    function showMemoPopup(memo) {', formatStart);
 assert.ok(formatStart >= 0 && formatEnd > formatStart);
