@@ -87,6 +87,15 @@ const blueblood = context.__summary.nativeSaveDisplay({
   game: 'blueblood-0.1.7',
   gameVersion: '0.1.7',
   savedAt: new Date('2026-11-26T01:00:00Z').getTime(),
+  nativeSave: {
+    format: 1,
+    engine: 'hengine-1',
+    game: { id: 'blueblood-0.1.7', version: '0.1.7' },
+    mods: [{ id: 'cloud-save', version: '0.6.3' }],
+    label: '1',
+    clock: '08:30',
+    savedAt: '2026-11-26T01:00:00.000Z'
+  },
   state: {
     now: { day: 8, clock: '08:30', place: '침실' },
     player: { name: '아리아' },
@@ -102,6 +111,26 @@ assert.equal(blueblood.cheated, true);
 assert.equal(blueblood.now, JSON.stringify({ day: 8, clock: '08:30', place: '침실' }));
 assert.match(blueblood.summary, /08:30/);
 assert.match(blueblood.summary, /침실/);
+const bluebloodProperties = context.__summary.buildDriveDisplayProperties({
+  game: 'blueblood-0.1.7',
+  gameVersion: '0.1.7',
+  savedAt: new Date('2026-11-26T01:00:00Z').getTime(),
+  nativeSave: {
+    format: 1,
+    engine: 'hengine-1',
+    game: { id: 'blueblood-0.1.7', version: '0.1.7' },
+    label: '1',
+    clock: '08:30',
+    savedAt: '2026-11-26T01:00:00.000Z'
+  },
+  state: { now: { day: 8, clock: '08:30', place: '침실' }, player: { name: '아리아' }, cheats: { used: ['debug'] } },
+  modData: {}
+});
+assert.equal(bluebloodProperties.wmlNativeProfile, 'blueblood');
+assert.equal(bluebloodProperties.wmlNativeLabel, '1');
+assert.equal(bluebloodProperties.wmlNativeClock, '08:30');
+assert.equal(bluebloodProperties.wmlNativeEngine, 'hengine-1');
+assert.equal(bluebloodProperties.wmlNativeCheated, '1');
 
 const hunt = context.__summary.nativeSaveDisplay({
   game: 'hunt-0.3.0',
