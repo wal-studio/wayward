@@ -47,8 +47,9 @@ assert.doesNotMatch(requestSource, /host\.startGoogleDriveAuth(?:WithPolicy)?\s*
   'CloudSave must not call the native start API directly');
 assert.doesNotMatch(requestSource, /host\.takePendingStateForNonce\s*\(/,
   'CloudSave must not poll native auth results directly');
+assert.match(requestSource, /195000/, 'popup timeout must outlast the launcher bridge 180-second poll');
 
-function makeHarness({ protocol = 'https:', origin = 'https://game.example', native = true } = {}) {
+function makeHarness({ protocol = 'https:', origin = 'https://game.example', native = true, forceSelectAccount = false } = {}) {
   const nonce = 'a'.repeat(48);
   const listeners = new Map();
   const posted = [];
@@ -101,12 +102,12 @@ function makeHarness({ protocol = 'https:', origin = 'https://game.example', nat
   };
   const factory = vm.runInNewContext('(function(){\n' + requestSource +
     '\n return requestGoogleToken; })()', context);
-  const promise = factory(false);
+  const promise = factory(forceSelectAccount);
   assert.ok(opened, 'window.open must be called synchronously');
   const bridgeUrl = new URL(opened.url);
   assert.equal(bridgeUrl.searchParams.get('origin'), protocol === 'file:' || origin === 'null' ? 'null' : origin);
   assert.equal(bridgeUrl.searchParams.get('nonce'), nonce);
-  assert.equal(bridgeUrl.searchParams.get('login'), 'remember');
+  assert.equal(bridgeUrl.searchParams.get('login'), forceSelectAccount ? 'select_account' : 'remember');
   assert.equal(nativeStartCalls, 0, 'module must not start native auth directly');
   assert.equal(nativeTakeCalls, 0, 'module must not poll native results directly');
   return {
@@ -130,6 +131,9 @@ function makeHarness({ protocol = 'https:', origin = 'https://game.example', nat
   // Browser GIS path: versioned ready/hello handshake is mandatory.
   {
     const h = makeHarness({ native: false });
+    h.send({ version: 1, nonce: h.nonce, type: 'wayward-cloud-auth-success',
+      accessToken: 'premature-browser-token-123456', expiresIn: 3600 });
+    assert.equal(h.accepted, null, 'static page success must wait for the ready/hello handshake');
     h.send({ version: 1, nonce: h.nonce, type: 'wayward-cloud-auth-061-ready' });
     assert.equal(h.posted.length, 1);
     assert.equal(h.posted[0].message.type, 'wayward-cloud-auth-061-hello');
@@ -138,6 +142,15 @@ function makeHarness({ protocol = 'https:', origin = 'https://game.example', nat
       accessToken: 'browser-access-token-123456', expiresIn: 3600 });
     await h.promise;
     assert.equal(h.accepted, 'browser-access-token-123456');
+  }
+
+  // Explicit logout retains the account-picker policy through the launcher bridge.
+  {
+    const h = makeHarness({ native: true, forceSelectAccount: true });
+    assert.equal(h.bridgeUrl.searchParams.get('login'), 'select_account');
+    h.send({ nonce: h.nonce, type: 'wayward-cloud-auth-error',
+      message: 'account selection cancelled' });
+    await assert.rejects(h.promise, /account selection cancelled/);
   }
 
   // Android launcher bridge path: the launcher emits an unversioned result.
