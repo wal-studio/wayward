@@ -1,4 +1,4 @@
-Wayward Google Drive CloudSave — WML v0.6.2
+Wayward Google Drive CloudSave — WML v0.6.3
 
 설치
 1. cloud-save 폴더를 게임의 wml/mods/ 안에 복사합니다.
@@ -8,12 +8,12 @@ Wayward Google Drive CloudSave — WML v0.6.2
 
 인증
 - 브라우저 정적 인증 페이지: https://jeiky224.github.io/cloud/auth-061.html
-- Android 공식 런처: WMLHost.startGoogleDriveAuthWithPolicy(nonce, forceSelectAccount), takePendingStateForNonce(nonce)
+- Android 공식 런처: 사용자 클릭에서 window.open(auth-061.html)을 호출하고 document-start bridge가 WMLHost.startGoogleDriveAuthWithPolicy(nonce, forceSelectAccount)를 호출합니다. 결과는 nonce가 포함된 MessageEvent로 돌아오며 CloudSave가 Origin/source/nonce/토큰을 검증합니다. 모드가 WMLHost를 직접 호출하거나 별도 폴링하지 않습니다.
 - 0.6.1 일회성 accessToken 응답 구조를 유지합니다. 0.7.x 페이지 소유 세션 브리지와 혼합하지 않습니다.
 - 인증 nonce는 24바이트 난수의 48자리 16진수입니다.
 - Access Token과 Refresh Token은 localStorage, sessionStorage, URL, 게임 세이브에 저장하지 않습니다.
 - 사용자에게 보이는 미연결 버튼은 "구글 계정으로 연결"입니다.
-- 로그인 유지 설정 버튼은 없습니다. 가능한 범위에서 기존 브라우저 세션/런처 승인을 재사용합니다.
+- 로그인 유지 설정 버튼은 없습니다. 기존 브라우저 세션/런처 승인은 사용자가 연결 버튼을 누를 때 재사용합니다. 창을 열 때 자동 네이티브 인증을 시작하지 않아 중복 ActivityResult 요청을 방지합니다.
 
 로그아웃
 - 현재 메모리 access token과 Android 런처가 가진 해당 access-token 캐시를 삭제합니다.
@@ -32,7 +32,7 @@ Wayward Google Drive CloudSave — WML v0.6.2
 지원 환경
 - localhost, 127.0.0.1, 0.0.0.0, LAN HTTP, HTTPS
 - file://는 opaque Origin의 opener 기반 handoff를 시도합니다. 브라우저의 팝업/opener 제한으로 성공하지 못할 수 있으므로 실환경 테스트 결과를 확인해야 합니다.
-- Android 런처는 네이티브 인증 API가 있으면 우선 사용하고, API가 없으면 웹 GIS 경로로 전환합니다.
+- Android 런처는 document-start 인증 브리지가 팝업을 가로채 네이티브 인증을 수행합니다. 브리지가 없는 환경은 정적 GIS 팝업 경로를 사용합니다.
 
 세이브 호환성
 - 기존 Drive appDataFolder, 슬롯 ID, 파일명, JSON envelope 및 AES-256-GCM 형식을 유지합니다.
