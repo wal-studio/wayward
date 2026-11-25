@@ -778,7 +778,7 @@ WML.define({
       const state = snapshot && snapshot.state || {};
       const characters = state.characters;
       const primaryId = state.primaryCharacterId;
-      let active = characters && primaryId != null ? characters[String(primaryId)] : null;
+      let active = characters ? characters[String(primaryId == null ? 'wife' : primaryId)] : null;
       if (!active && characters && typeof characters === 'object') {
         active = Object.values(characters).find(value => value && typeof value === 'object' &&
           (value.isPrimary === true || value.isMain === true || value.primary === true)) || null;
@@ -802,7 +802,7 @@ WML.define({
       const seen = new Set();
       const output = [];
       const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|skill)/i;
-      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash|role|occupation|job|origin|background|statusName|className|socialClass|characterRole|profession|identity)$/i;
+      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash|role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i;
       const labels = [
         [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
         [/rank/i, '등급'], [/reputation/i, '평판'],
@@ -1273,9 +1273,11 @@ WML.define({
       const parts = [];
       const timestamp = Date.parse(String(file && file.modifiedTime || ''));
       if (Number.isFinite(timestamp)) {
-        parts.push(new Date(timestamp).toLocaleString('ko-KR', {
-          month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        }));
+        const date = new Date(timestamp);
+        const hour = date.getHours();
+        const clock = (hour % 12 || 12) + ':' + String(date.getMinutes()).padStart(2, '0');
+        parts.push((date.getMonth() + 1) + '월 ' + date.getDate() + '일 ' +
+          (hour < 12 ? '오전 ' : '오후 ') + clock);
       }
       const size = Number(file && file.size) || 0;
       if (size > 0) {
