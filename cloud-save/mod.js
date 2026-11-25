@@ -1256,8 +1256,6 @@ WML.define({
           }
         } else {
           const stateText = {
-            restoring: 'Android 런처에 저장된 Google 승인 상태를 확인하고 있습니다.',
-            'restore-pending': '이전에 연결한 Google 계정의 승인 상태를 다시 확인할 수 있습니다.',
             'explicit-logout': '로그아웃했습니다. 다음 연결은 Google 계정 선택 화면을 사용합니다.',
             'reauth-required': 'Google 계정 연결이 필요합니다.',
             'google-session-expired': 'Google 계정 세션이 만료되었습니다. 다시 연결해 주세요.',
