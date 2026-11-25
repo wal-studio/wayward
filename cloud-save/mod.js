@@ -700,61 +700,164 @@ WML.define({
 
     function buildSnapshot() {
       const state = api.store.game();
-      const apiGame = api.game && typeof api.game === 'object' ? api.game : null;
+      if (!state || typeof state !== 'object' || Array.isArray(state)) {
+        throw new Error('게임이 시작된 뒤에 저장할 수 있습니다.');
+      }
+      // Prefer the game's native serializer when WML resolves it. Some newer
+      // builds no longer expose that minified helper under a stable symbol.
+      // In that case preserve the current JSON-compatible game state directly;
+      // do not block the whole addon on an optional private implementation detail.
       let native = null;
       if (api.has('nativeSaveJSON')) {
         try {
-          const raw = api.fn('nativeSaveJSON')(state, String(apiGame && apiGame.id || (typeof api.game === 'string' ? api.game : '') || globalThis.WML_GAME || ''));
-          native = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        } catch (_) {}
+          native = JSON.parse(api.fn('nativeSaveJSON')(state, String(api.game || '')));
+        } catch (_) {
+          native = null;
+        }
       }
-      const nativeGame = native && native.game && typeof native.game === 'object' ? native.game : null;
-      const gameId = String(
-        nativeGame && nativeGame.id ||
-        apiGame && apiGame.id ||
-        (typeof api.game === 'string' ? api.game : '') ||
-        globalThis.WML_GAME ||
-        ''
-      );
-      const nativeStateKey = native && native.world && typeof native.world === 'object'
-        ? 'world'
-        : native && native.state && typeof native.state === 'object'
-          ? 'state'
-          : '';
-      const nativeState = nativeStateKey === 'world'
-        ? native.world
-        : nativeStateKey === 'state'
-          ? native.state
-          : null;
-      const nativeSave = native && typeof native === 'object'
-        ? Object.fromEntries(Object.entries(native).filter(([key]) => key !== 'world' && key !== 'state'))
-        : null;
+      const stateToSave = native && native.format === 1 && native.state &&
+        typeof native.state === 'object' && !Array.isArray(native.state)
+        ? native.state
+        : JSON.parse(JSON.stringify(state));
+      const gameVersion = native && native.gameVersion != null
+        ? String(native.gameVersion)
+        : String(api.game || '');
       const modData = native && native.modData && typeof native.modData === 'object'
         ? native.modData
-        : nativeState && nativeState.modData && typeof nativeState.modData === 'object'
-          ? nativeState.modData
-          : (typeof api.store.modData === 'function' ? api.store.modData() : {});
-      const gameVersion = String(
-        nativeGame && nativeGame.version ||
-        native && native.gameVersion ||
-        apiGame && apiGame.version ||
-        gameId
-      );
+        : (stateToSave.mods && typeof stateToSave.mods === 'object' &&
+          !Array.isArray(stateToSave.mods) ? stateToSave.mods : {});
       return {
         schema: 'wayward-cloud-save',
         version: 1,
         gameFamily: 'wayward',
-        game: gameId,
+        game: String(api.game || ''), // build identifier for diagnostics; not a compatibility gate
         gameVersion,
         nativeFormat: 1,
-        nativeSave,
-        nativeSaveStateKey: nativeStateKey,
         savedAt: Date.now(),
-        memo: String(fields.memo || ''),
-        title: defaultTitle(state),
-        state: nativeState || state,
+        memo: '',
+        title: defaultTitle(stateToSave),
+        state: stateToSave,
         modData
       };
+    }
+
+    function firstValue(root, patterns) {
+      const seen = new Set(), queue = [{ value: root, depth: 0 }];
+      while (queue.length) {
+        const item = queue.shift();
+        if (!item.value || typeof item.value !== 'object' || seen.has(item.value) || item.depth > 5) continue;
+        seen.add(item.value);
+        for (const [key, value] of Object.entries(item.value)) if (patterns.some(pattern => pattern.test(key)) && (typeof value === 'string' || typeof value === 'number') && String(value).trim()) return value;
+        for (const value of Object.values(item.value)) if (value && typeof value === 'object') queue.push({ value, depth: item.depth + 1 });
+      }
+      return '';
+    }
+    function activeCharacterName(snapshot) {
+      const state = snapshot && snapshot.state || {};
+      const characters = state.characters;
+      const primaryId = state.primaryCharacterId;
+      let active = characters ? characters[String(primaryId == null ? 'wife' : primaryId)] : null;
+      if (!active && characters && typeof characters === 'object') {
+        active = Object.values(characters).find(value => value && typeof value === 'object' &&
+          (value.isPrimary === true || value.isMain === true || value.primary === true)) || null;
+      }
+      for (const candidate of [active, state.player, state.character, state.wife]) {
+        const name = firstValue(candidate, [/^(name|displayName|characterName|playerName|wifeName|girlName)$/i]);
+        if (name !== '') return name;
+      }
+      return firstValue({
+        state,
+        modData: snapshot && snapshot.modData || {}
+      }, [/^(characterName|playerName|protagonistName|heroName|mainCharacterName|girlName|wifeName)$/i]);
+    }
+
+    function collectSummaryExtras(snapshot) {
+      const roots = {
+        state: snapshot && snapshot.state || {},
+        modData: snapshot && snapshot.modData || {}
+      };
+      const queue = [{ value: roots, path: [], depth: 0 }];
+      const seen = new Set();
+      const output = [];
+      const interesting = /(level|stage|chapter|rank|reputation|relationship|affection|trust|quest|floor|progress|turn|debt|score|experience|(^|[^a-z])xp($|[^a-z])|location|region|skill)/i;
+      const excluded = /^(id|uuid|seed|rng|timestamp|savedAt|version|schema|log|history|undo|cache|settings|config|token|name|characterName|playerName|day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed|gameDay|storyDay|gold|money|coins|currency|playerGold|currentGold|goldAmount|cash|role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i;
+      const labels = [
+        [/level/i, '레벨'], [/stage/i, '단계'], [/chapter/i, '챕터'],
+        [/rank/i, '등급'], [/reputation/i, '평판'],
+        [/relationship|affection|trust/i, '관계'], [/quest/i, '퀘스트'],
+        [/floor/i, '층'], [/progress/i, '진행'], [/turn/i, '턴'],
+        [/debt/i, '부채'], [/score/i, '점수'], [/experience|xp/i, '경험치'],
+        [/location|region/i, '장소'], [/skill/i, '기술']
+      ];
+      let visited = 0;
+      while (queue.length && visited < 2500 && output.length < 12) {
+        const item = queue.shift();
+        const value = item.value;
+        if (!value || typeof value !== 'object' || seen.has(value) || item.depth > 8) continue;
+        seen.add(value);
+        for (const [key, child] of Object.entries(value)) {
+          visited += 1;
+          const path = item.path.concat(key);
+          if ((typeof child === 'string' || typeof child === 'number') &&
+              interesting.test(key) && !excluded.test(key)) {
+            const text = String(child).trim();
+            if (text && text.length <= 48 && !output.some(entry => entry.value === text)) {
+              const label = (labels.find(([pattern]) => pattern.test(key)) || [null, key])[1];
+              output.push({ label, value: text, path: path.join('.') });
+            }
+          } else if (child && typeof child === 'object' && item.depth < 8) {
+            queue.push({ value: child, path, depth: item.depth + 1 });
+          }
+        }
+      }
+      return output;
+    }
+
+    function makeSummary(snapshot) {
+      const state = snapshot && snapshot.state || {};
+      const roots = { state, modData: snapshot && snapshot.modData || {} };
+      const day = firstValue(roots, [/^(day|days|currentDay|progressDay|dayCount|elapsedDays|daysPassed)$/i, /^(gameDay|storyDay)$/i]);
+      const gold = firstValue(roots, [/^(gold|money|coins|currency|playerGold|currentGold|goldAmount|cash)$/i, /gold|money|currency/i]);
+      const role = firstValue(roots, [/^(role|occupation|job|origin|background|phase|statusName|className|socialClass|characterRole|profession|identity)$/i]);
+      const character = activeCharacterName(snapshot);
+      const parts = [];
+      if (character && day !== '') parts.push(String(character) + ' 진행일: ' + String(day));
+      else if (character) parts.push(String(character));
+      else if (day !== '') parts.push('진행일: ' + String(day));
+      if (gold !== '') parts.push(String(gold) + '골드');
+      if (role !== '') parts.push(String(role));
+      for (const extra of collectSummaryExtras(snapshot)) {
+        if (parts.length >= 5) break;
+        parts.push(extra.label + ': ' + extra.value);
+      }
+      return parts.join(' · ') || defaultTitle(state);
+    }
+
+    function truncateDriveProperty(value, maxBytes) {
+      const source = String(value == null ? '' : value);
+      let output = '';
+      let bytes = 0;
+      for (const character of source) {
+        const point = character.codePointAt(0);
+        const size = point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
+        if (bytes + size > maxBytes) break;
+        output += character;
+        bytes += size;
+      }
+      return output;
+    }
+
+    function buildDriveDisplayProperties(snapshot) {
+      const memo = String(snapshot && snapshot.memo || '').trim();
+      return {
+        wmlSummary: truncateDriveProperty(makeSummary(snapshot), 120),
+        wmlMemoPreview: truncateDriveProperty(memo.replace(/\s+/g, ' '), 100),
+        wmlHasMemo: memo ? '1' : '0'
+      };
+    }
+    function defaultTitle(state) {
+      const day = Number(state && state.day);
+      return Number.isFinite(day) && day > 0 ? 'Day ' + day : 'Wayward 세이브';
     }
 
     function firstValue(root, patterns) {
