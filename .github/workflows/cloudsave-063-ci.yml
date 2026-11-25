@@ -11,6 +11,7 @@ on:
       - 'cloud-save/**'
       - 'scripts/test-cloudsave-063.cjs'
       - 'scripts/test-cloudsave-display-metadata.cjs'
+      - 'scripts/forensic-native-save-display-scan.cjs'
       - '.github/workflows/cloudsave-063-ci.yml'
   pull_request:
     branches:
@@ -46,6 +47,8 @@ jobs:
         run: node scripts/test-cloudsave-063.cjs
       - name: Verify native metadata preservation and memo UI
         run: node scripts/test-cloudsave-display-metadata.cjs
+      - name: Scan pinned native game save-list source
+        run: node scripts/forensic-native-save-display-scan.cjs
       - name: Verify diff and package
         run: |
           git diff --check e58c18c28e8ecf3daed809e3c8aee95e66a32c07...HEAD
