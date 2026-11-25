@@ -915,7 +915,7 @@ WML.define({
         display.day = day === '' ? '' : String(day);
         display.clock = clock === '' ? '' : String(clock);
         display.place = place === '' ? '' : String(place);
-        display.now = state.now == null ? '' : String(state.now);
+        display.now = state.now == null ? '' : typeof state.now === 'object' ? JSON.stringify(state.now) : String(state.now);
         display.cheated = !!(state.cheats && Array.isArray(state.cheats.used) && state.cheats.used.length) ||
           firstFlag({ state, modData: snapshot && snapshot.modData || {} },
             [/^(cheated|cheatUsed|cheatsUsed|usedCheats)$/i]);
