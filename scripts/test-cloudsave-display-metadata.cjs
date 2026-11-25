@@ -62,7 +62,8 @@ const display = context.__summary.buildDriveDisplayProperties({
   memo: '첫 줄\n두 번째 줄 — 메모 전체 내용'
 });
 assert.equal(display.wmlHasMemo, '1');
-assert.match(display.wmlMemoPreview, /첫 줄 두 번째 줄/);
+assert.equal(display.wmlMemoPreview, '첫 줄', 'save-list memo preview must contain only the first line');
+assert.doesNotMatch(display.wmlMemoPreview, /두 번째 줄/, 'later memo lines must remain available only inside the encrypted snapshot');
 assert.ok(Buffer.byteLength(display.wmlSummary, 'utf8') <= 120);
 assert.ok(Buffer.byteLength(display.wmlMemoPreview, 'utf8') <= 100);
 
