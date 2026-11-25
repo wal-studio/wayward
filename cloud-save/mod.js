@@ -848,11 +848,13 @@ WML.define({
     }
 
     function buildDriveDisplayProperties(snapshot) {
-      const memo = String(snapshot && snapshot.memo || '').trim();
+      const memo = String(snapshot && snapshot.memo || '');
+      const hasMemo = memo.trim().length > 0;
+      const firstLine = memo.split(/\r\n|\n|\r/, 1)[0].trim();
       return {
         wmlSummary: truncateDriveProperty(makeSummary(snapshot), 120),
-        wmlMemoPreview: truncateDriveProperty(memo.replace(/\s+/g, ' '), 100),
-        wmlHasMemo: memo ? '1' : '0'
+        wmlMemoPreview: truncateDriveProperty(firstLine, 100),
+        wmlHasMemo: hasMemo ? '1' : '0'
       };
     }
     function defaultTitle(state) {
