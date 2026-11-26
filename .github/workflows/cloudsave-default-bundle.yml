@@ -15,12 +15,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Download the verified CloudSave 0.6.3 CI artifact
         env:
-          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           curl -fsSL --retry 3 \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Authorization: token $GH_TOKEN" \
             https://api.github.com/repos/wal-studio/wayward/actions/artifacts/15067791554/zip \
             -o /tmp/cloudsave-artifact.zip
           unzip -t /tmp/cloudsave-artifact.zip
@@ -80,23 +80,23 @@ jobs:
                   raise SystemExit("cloud-save already exists in mods.zip; refusing duplicate integration")
               original = zf.read("mods.js")
 
-          bom = b"\\xef\\xbb\\xbf" if original.startswith(b"\\xef\\xbb\\xbf") else b""
+          bom = b"\xef\xbb\xbf" if original.startswith(b"\xef\xbb\xbf") else b""
           text = original.decode("utf-8-sig")
-          enable = re.search(r"WML\\.enable\\s*\\(\\s*\\[(.*?)\\]\\s*\\)", text, re.S)
+          enable = re.search(r"WML\.enable\s*\(\s*\[(.*?)\]\s*\)", text, re.S)
           if not enable or '"companions"' not in enable.group(1):
               raise SystemExit("Could not prove the expected WML.enable list")
-          if re.search(r'(?m)^\\s*["\\']cloud-save["\\']\\s*,?\\s*$', text):
+          if re.search(r'(?m)^\s*["\']cloud-save["\']\s*,?\s*$', text):
               raise SystemExit("cloud-save already appears in mods.js")
-          matches = list(re.finditer(r'(?m)^([ \\t]*)(["\\']companions["\\'],)[ \\t]*\\r?$', text))
+          matches = list(re.finditer(r'(?m)^([ \t]*)(["\']companions["\'],)[ \t]*\r?$', text))
           if len(matches) != 1:
               raise SystemExit(f"Expected one companions entry, found {len(matches)}")
           m = matches[0]
-          newline = "\\r\\n" if "\\r\\n" in text else "\\n"
-          replacement = m.group(1) + '"cloud-save",' + newline + m.group(0).rstrip("\\r")
+          newline = "\r\n" if "\r\n" in text else "\n"
+          replacement = m.group(1) + '"cloud-save",' + newline + m.group(0).rstrip("\r")
           updated = text[:m.start()] + replacement + text[m.end():]
           (stage / "mods.js").write_bytes(bom + updated.encode("utf-8"))
 
-          if package["mod.js"].find(b"cloud-save") < 0:
+          if b"cloud-save" not in package["mod.js"]:
               raise SystemExit("0.6.3 mod.js does not identify cloud-save")
           if b"crypto.js" not in package["mod.js"]:
               raise SystemExit("0.6.3 mod.js does not load crypto.js")
@@ -120,6 +120,7 @@ jobs:
           from zipfile import ZipFile
           from pathlib import Path
           from difflib import SequenceMatcher
+          import re
 
           with ZipFile("/tmp/mods-before.zip") as old, ZipFile("mods.zip") as new:
               assert old.testzip() is None
@@ -143,17 +144,17 @@ jobs:
               edits = [(tag, i1, i2, j1, j2) for tag, i1, i2, j1, j2 in sm.get_opcodes() if tag != "equal"]
               assert len(edits) == 1 and edits[0][0] == "insert", f"mods.js changes are not a single insertion: {edits}"
               _, _, _, j1, j2 = edits[0]
-              assert new_text[j1:j2] == ['    "cloud-save",\\n'] or new_text[j1:j2] == ['    "cloud-save",\\r\\n'], new_text[j1:j2]
+              assert len(new_text[j1:j2]) == 1 and re.fullmatch(r'[ \t]*"cloud-save",[ \t]*(?:\r?\n)?', new_text[j1]), new_text[j1:j2]
               contents = new.read("mods.js").decode("utf-8-sig")
               assert contents.count('"cloud-save"') == 1
               for name in required:
-                  assert new.read(name) == (Path("/tmp/cloudsave-stage") / name).read_bytes()
+                  assert new.read(name) == (Path("/tmp/cloudsave-stage/cloud-save") / name).read_bytes()
               print(f"PASS: {len(old_names)} original entries preserved; {len(added)} CloudSave entries added; mods.js has one inserted enable line.")
           PY
           sha256sum mods.zip
       - name: Commit only the bundled release archive
         env:
-          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
