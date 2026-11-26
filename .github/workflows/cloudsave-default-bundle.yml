@@ -148,7 +148,7 @@ jobs:
               contents = new.read("mods.js").decode("utf-8-sig")
               assert contents.count('"cloud-save"') == 1
               for name in required:
-                  assert new.read(name) == (Path("/tmp/cloudsave-stage/cloud-save") / name).read_bytes()
+                  assert new.read(name) == (Path("/tmp/cloudsave-stage") / name).read_bytes()
               print(f"PASS: {len(old_names)} original entries preserved; {len(added)} CloudSave entries added; mods.js has one inserted enable line.")
           PY
           sha256sum mods.zip
