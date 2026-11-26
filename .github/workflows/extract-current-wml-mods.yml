@@ -72,6 +72,13 @@ jobs:
           if bad is not None:
               raise SystemExit(f"Corrupt runtime archive member: {bad}")
           PY
+      - name: Verify and inventory bundled mods archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -t mods.zip
+          unzip -Z1 mods.zip > forensic-package/mods-archive-index.txt
+          echo "mods.zip entries: $(wc -l < forensic-package/mods-archive-index.txt)"
       - name: Upload exact current package and WML runtime source
         uses: actions/upload-artifact@v4
         with:
